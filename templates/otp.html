@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Automobile Component of Goa Limited</title>
+  <style>
+    body.login-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f2f2f2;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 40px 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-container .header img {
+      height: 70px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .login-container .header h1 {
+      display: inline;
+      font-size: 24px;
+      vertical-align: middle;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-container input[type="text"],
+    .login-container input[type="password"],
+    .login-container input[type="email"],
+    .login-container input[type="tel"],
+    .login-container input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .login-container .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .login-container button:hover {
+      background-color: #0056b3;
+    }
+
+    .login-container .otp-btn {
+      background-color: #28a745;
+    }
+
+    .login-container .otp-btn:hover {
+      background-color: #218838;
+    }
+  </style>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body class="login-page">
+  <!-- Sign In Container -->
+  <div class="login-container">
+    <div class="header">
+      <img src="/static/ACGL_logo.jpg" alt="ACJL Logo">
+      <h1>Automobile Component of Goa Limited</h1>
+    </div>
+    <h2>Sign In</h2>
+    <select id="authOption" onchange="toggleInputFields()">
+      <option value="email">Email</option>
+      <option value="phone">Phone Number</option>
+    </select>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="tel" id="phone" placeholder="Phone Number" style="display:none;" required>
+    <button type="button" class="otp-btn" onclick="sendOTP()">Send OTP</button>
+    <input type="number" id="otp" placeholder="Enter OTP" required>
+    <button type="button" onclick="verifyOTP()">Verify OTP</button>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script
+    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"
+  ></script>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+  ></script>
+
+  <!-- JavaScript for handling OTP -->
+  <script>
+    function toggleInputFields() {
+      const authOption = document.getElementById('authOption').value;
+      const emailField = document.getElementById('email');
+      const phoneField = document.getElementById('phone');
+
+      if (authOption === 'email') {
+        emailField.style.display = 'block';
+        phoneField.style.display = 'none';
+      } else if (authOption === 'phone') {
+        emailField.style.display = 'none';
+        phoneField.style.display = 'block';
+      }
+    }
+
+    function sendOTP() {
+      const authOption = document.getElementById('authOption').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+
+      if (authOption === 'email' && email) {
+        // Code to send OTP to email
+        console.log('Sending OTP to email:', email);
+      } else if (authOption === 'phone' && phone) {
+        // Code to send OTP to phone
+        console.log('Sending OTP to phone:', phone);
+      } else {
+        alert('Please select an option and enter the required information.');
+      }
+    }
+
+    function verifyOTP() {
+      const otp = document.getElementById('otp').value;
+      // Verify the OTP
+      if (otp) {
+        // Code to verify OTP
+        console.log('Verifying OTP:', otp);
+      } else {
+        alert('Please enter the OTP.');
+      }
+    }
+  </script>
+</body>
+</html>

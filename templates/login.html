@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Automobile Component of Goa Limited</title>
+  <style>
+    body.login-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8f9fa;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #ffffff;
+      border-radius: 10px; /* Adding border radius */
+      padding: 40px 30px; /* Increasing padding */
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adding box shadow */
+    }
+
+    .login-container .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-container .header img {
+      height: 70px; /* Increasing height */
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .login-container .header h1 {
+      display: inline;
+      font-size: 24px;
+      vertical-align: middle;
+      color: #343a40;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 30px; /* Increasing bottom margin */
+      color: #343a40;
+    }
+
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+    }
+
+    .login-container .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px; /* Adjusting bottom margin */
+    }
+
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px; /* Adding margin-bottom */
+    }
+
+    .login-container button:hover {
+      background-color: #0056b3;
+    }
+
+    .login-container .otp-btn {
+      background-color: #28a745; /* Green background for OTP button */
+    }
+
+    .login-container .otp-btn:hover {
+      background-color: #218838; /* Darker green on hover */
+    }
+
+    .login-container .create-account-btn {
+      background-color: #6c757d; /* Gray background for create account button */
+    }
+
+    .login-container .create-account-btn:hover {
+      background-color: #5a6268; /* Darker gray on hover */
+    }
+  </style>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body class="login-page">
+  <!-- Sign In Container -->
+  <div class="login-container">
+    <div class="header">
+      <img src="/static/ACGL_logo.jpg" alt="{{company_name}} Logo">
+      <h1>Automobile Component of Goa Limited</h1>
+    </div>
+    <h2>Sign In</h2>
+    
+    <form method="post" action="/login_details/">
+    {% csrf_token %}
+    <input type="text" placeholder="Username" name="username1" required onfocus="showUsernamePopup()" onblur="validateUsername()">
+    <span id="username-popup" style="color: red; display: none;">Only letters, numbers, and '_' allowed. Must be unique.</span>
+    <span id="username-error" style="color: red;"></span>
+    <input type="password" placeholder="Password" name="password1" required>
+    <button type="submit">Sign in</button>
+    </form>
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="options">
+      <label><input type="checkbox"> Save credentials</label>
+      <a href="#" style="color: #007bff">Reset Password</a>
+    </div>
+    
+    <button class="otp-btn" onclick="location.href='/otp'">Login with OTP</button>
+    <button class="otp-btn" onclick="location.href='google.html'">Login with Google</button>
+    <button class="create-account-btn" onclick="location.href='/account'">Create a New Account</button>
+  </div>
+  <script>
+    function showUsernamePopup() {
+        document.getElementById("username-popup").style.display = "inline";
+    }
+  
+    function validateUsername() {
+        var username = document.getElementById("username").value;
+        var usernameError = document.getElementById("username-error");
+        var usernamePopup = document.getElementById("username-popup");
+  
+        // Hide popup after user moves away
+        usernamePopup.style.display = "none";
+  
+        var validPattern = /^[a-zA-Z0-9_]+$/;
+        if (!validPattern.test(username)) {
+            usernameError.innerText = "Invalid username format!";
+            return;
+        }
+  
+        // AJAX call to check username existence
+        fetch('/check-username/?username=' + username)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists === false) {
+                    usernameError.innerText = "Username does not exist. Create a new account.";
+                } else {
+                    usernameError.innerText = "";
+                }
+            });
+    }
+  </script>
+  <!-- Bootstrap JS and dependencies -->
+  <script
+    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"
+  ></script>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+  ></script>
+</body>
+</html>

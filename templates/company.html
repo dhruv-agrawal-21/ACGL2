@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGs03+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <title>{{company_name}} - Company</title>
+
+    <style>
+        /* Style for the login circle button */
+        .login-circle {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; /* Makes it circular */
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            line-height: 40px; /* Vertically center the icon */
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-left: 10px; /* Spacing from the search bar */
+        }
+
+        /* Hover effect */
+        .login-circle:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+
+        /* Icon styling */
+        .login-circle i {
+            font-size: 1rem;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+        }
+
+        .sidebar ul li ul {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .sidebar ul li ul li {
+            margin: 10px 0;
+        }
+
+        .sidebar ul li.active ul {
+            display: block;
+        }
+
+        .toggle-btn {
+            background-color: #34495e;
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn:hover {
+            background-color: #1abc9c;
+        }
+
+        /* Scrollable dropdown styling */
+        .dropdown-menu-scrollable {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Center dropdown styling */
+        .dropdown-center {
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <!-- Brand/Logo -->
+            <a class="navbar-brand" href="#" onclick="toggleSidebar()">{{company_name}}</a>
+
+            <!-- Toggle Button for Mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Services
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
+                            <li><a class="dropdown-item" href="#">Service</a></li>
+                            <li><a class="dropdown-item" href="#">Materials</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+
+                <!-- Dropdown for Company Names -->
+                <div class="dropdown dropdown-center">
+                    <button class="btn btn-outline-light dropdown-toggle w-100" type="button" id="companyDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        0002500001 - 3T LOGISTICS
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-scrollable w-100" aria-labelledby="companyDropdown">
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500001 - 3T LOGISTICS')">0002500001 - 3T LOGISTICS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501427 - Shrivinayak Electroplater Pvt. Ltd.')">0002501427 - Shrivinayak Electroplater Pvt. Ltd.</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501785 - SCIENTIFIC INSTRUMENTS SERVICE')">0002501785 - SCIENTIFIC INSTRUMENTS SERVICE</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501783 - RIVIGO Services Private Limited')">0002501783 - RIVIGO Services Private Limited</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500126 - LAWA BRIGHT BARS (P) LTD.')">0002500126 - LAWA BRIGHT BARS (P) LTD.</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500158 - NIKITA ENGINEERING WORKS')">0002500158 - NIKITA ENGINEERING WORKS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500257 - ABHIJIT ENGINEERING')">0002500257 - ABHIJIT ENGINEERING</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500258 - ABHIJIT INDUSTRIES ELECTROPLATERS')">0002500258 - ABHIJIT INDUSTRIES ELECTROPLATERS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500316 - BHARAT INDUSTRIES')">0002500316 - BHARAT INDUSTRIES</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500001 - 3T LOGISTICS')">0002500001 - 3T LOGISTICS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501427 - Shrivinayak Electroplater Pvt. Ltd.')">0002501427 - Shrivinayak Electroplater Pvt. Ltd.</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501785 - SCIENTIFIC INSTRUMENTS SERVICE')">0002501785 - SCIENTIFIC INSTRUMENTS SERVICE</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002501783 - RIVIGO Services Private Limited')">0002501783 - RIVIGO Services Private Limited</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500126 - LAWA BRIGHT BARS (P) LTD.')">0002500126 - LAWA BRIGHT BARS (P) LTD.</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500158 - NIKITA ENGINEERING WORKS')">0002500158 - NIKITA ENGINEERING WORKS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500257 - ABHIJIT ENGINEERING')">0002500257 - ABHIJIT ENGINEERING</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500258 - ABHIJIT INDUSTRIES ELECTROPLATERS')">0002500258 - ABHIJIT INDUSTRIES ELECTROPLATERS</a>
+                        <a class="dropdown-item" href="#" onclick="updateCompanyName('0002500316 - BHARAT INDUSTRIES')">0002500316 - BHARAT INDUSTRIES</a>
+                    </div>
+                </div>
+
+                <!-- Login Circle Button -->
+                <a href="/login" class="login-circle" title="Login">
+                    <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar" id="sidebar">
+        <h2>{{company_name}}</h2>
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <ul>
+            <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
+            <li><a href="#"><i class="fas fa-chart-line"></i>Logistics</a></li>
+            <li><a href="#"><i class="fas fa-sync"></i>Master data</a></li>
+            <li><a href="#"><i class="fas fa-file-alt"></i>Inventory Management</a></li>
+            <li class="active">
+                <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-tachometer-alt"></i>RFQ</a>
+                <ul>
+                    <li><a href="/rfq">Create</a></li>
+                    <li><a href="/rfq2">Change</a></li>
+                    <li><a href="/rfq">Display</a></li>
+                    <li><a href="/rfq2">Release</a></li>
+                </ul>
+            </li>
+            <li><a href="#"><i class="fas fa-sync"></i>Physical Inventory</a></li>
+        </ul>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-36qa4849b1E2+poT4WnyKhv5vZF5SrPo@iEjwBvKU7imGFAVBwwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2m3bHaEWld1vI9I0Yy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E5@Y2D1uUdj@03uMBJnjuUD4Ih7YwaYd1iqfktj@Uod8GCEx130g8ifw86"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        function toggleSubMenu(event) {
+            event.preventDefault();
+            const parentLi = event.target.closest('li');
+            parentLi.classList.toggle('active');
+        }
+
+        function updateCompanyName(companyName) {
+            const companyDropdown = document.getElementById('companyDropdown');
+            companyDropdown.textContent = companyName;
+        }
+
+        // Initialize the company name based on the URL parameter
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedCompany = urlParams.get('company');
+            if (selectedCompany) {
+                updateCompanyName(selectedCompany);
+            }
+        });
+    </script>
+</body>
+
+</html>
