@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Registration - Document Upload</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f5;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(135deg, #5a10b4 0%, #1f65c9 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar ul li.active, .sidebar ul li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar ul li.completed {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .sidebar ul li i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .sidebar ul li span {
+            font-size: 16px;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 400px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        input[type="file"] {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1abc9c;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        button:hover:enabled {
+            background: #16a085;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li class="completed">
+                    <i class="fas fa-user"></i>
+                    <span>Personal Details</span>
+                </li>
+                <li class="completed">
+                    <i class="fas fa-university"></i>
+                    <span>Company Bank Details</span>
+                </li>
+                <li class="active">
+                    <i class="fas fa-upload"></i>
+                    <span>Document Upload</span>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <h2>Vendor Registration - Document Upload</h2>
+            <form method="POST" action="/account3/" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="pan">PAN Card</label>
+                        <input type="file" id="pan" name="pan_doc" accept="image/*,application/pdf" required>
+            
+                        <label for="aadhar">Aadhar Card</label>
+                        <input type="file" id="aadhar" name="aadhar_doc" accept="image/*,application/pdf" required>
+            
+                        <label for="gst">GST Invoice</label>
+                        <input type="file" id="gst" name="gst_doc" accept="image/*,application/pdf" required>
+            
+                        <label for="bank">Bank Details Document</label>
+                        <input type="file" id="bank" name="bank_doc" accept="image/*,application/pdf" required>
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn" disabled>Submit</button>
+            </form>            
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInputs = document.querySelectorAll("input[type='file']");
+            const submitBtn = document.getElementById("submit-btn");
+
+            function checkFiles() {
+                let allFilled = true;
+                fileInputs.forEach(input => {
+                    if (!input.files.length) {
+                        allFilled = false;
+                    }
+                });
+                submitBtn.disabled = !allFilled;
+            }
+
+            fileInputs.forEach(input => input.addEventListener("change", checkFiles));
+        });
+    </script>
+</body>
+</html>

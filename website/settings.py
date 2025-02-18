@@ -75,13 +75,13 @@ WSGI_APPLICATION = 'website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
-#updated databse
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# updated database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -130,12 +130,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (Uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#added manually
+# added manually
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]

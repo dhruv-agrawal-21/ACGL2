@@ -1,52 +1,146 @@
-<!-- account2.html (Document Verification Page) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Account - Document Verification</title>
+    <title>Vendor Registration - Company Bank Details</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { display: flex; font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; height: 100vh; overflow: hidden; }
-        .container { flex-grow: 1; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 10px; border-radius: 8px; overflow-y: auto; }
-        .form-group { margin-bottom: 10px; }
-        .btn { padding: 10px; background: #00509e; border: none; color: white; cursor: pointer; width: 100%; border-radius: 5px; font-size: 14px; }
-        .btn:hover { background: #003366; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f5;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(135deg, #5a10b4 0%, #1f65c9 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar ul li.active, .sidebar ul li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar ul li.completed {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .sidebar ul li i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .sidebar ul li span {
+            font-size: 16px;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1abc9c;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #16a085;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2>ACGL</h2>
-        <ul>
-            <li class="completed">Level 1: Personal Details</li>
-            <li class="completed">Level 2: Document Verification</li>
-        </ul>
-    </div>
     <div class="container">
-        <h2>Document Verification</h2>
-        <form method="post" action="/upload_documents/" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label>Choose Document:</label>
-                <select id="doc-type" name="doc_type">
-                    <option value="Aadhar">Aadhar</option>
-                    <option value="Pan">Pan</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Upload Document:</label>
-                <input type="file" id="doc-upload" name="aadhar_doc" required>
-            </div>
-            <div class="form-group">
-                <label>Bank Details:</label>
-                <input type="text" id="bank" name="bank_details" required>
-            </div>
-            <div class="form-group">
-                <label>GST Document:</label>
-                <input type="file" id="gst-doc" name="gst_doc" required>
-            </div>
-            <button class="btn" type="submit" >Submit</button>
-        </form>
+        <div class="sidebar">
+            <ul>
+                <li class="completed">
+                    <i class="fas fa-user"></i>
+                    <span>Personal Details</span>
+                </li>
+                <li class="active">
+                    <i class="fas fa-university"></i>
+                    <span>Company Bank Details</span>
+                </li>
+                <li>
+                    <i class="fas fa-upload"></i>
+                    <span>Document Upload</span>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <h2>Vendor Registration - Company Bank Details</h2>
+            <form method="POST" action="/account2/">
+                {% csrf_token %}
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Bank Name</label>
+                        <input type="text" name="bank_name" required>
+            
+                        <label>Branch</label>
+                        <input type="text" name="branch" required>
+            
+                        <label>Account Number</label>
+                        <input type="text" name="account_number" required>
+            
+                        <label>IFSC Code</label>
+                        <input type="text" name="ifsc_code" required>
+            
+                        <label>Account Type</label>
+                        <select name="account_type" required>
+                            <option value="Savings">Savings</option>
+                            <option value="Current">Current</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Next</button>
+            </form>            
+        </div>
     </div>
 </body>
 </html>

@@ -1,102 +1,198 @@
-<!-- account.html (Personal Details Page) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Account - Personal Details</title>
+    <title>Vendor Registration - Personal Details</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { display: flex; font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; height: 100vh; overflow: hidden; }
-        .sidebar { width: 220px; background: #003366; padding: 15px; color: white; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li { padding: 12px; cursor: pointer; background: #00509e; margin-bottom: 8px; text-align: center; border-radius: 5px; font-size: 14px; }
-        .completed { background: #28a745 !important; }
-        .container { flex-grow: 1; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 10px; border-radius: 8px; overflow-y: auto; }
-        .form-group { margin-bottom: 20px; position: relative; } /* Increased space for pop-ups */
-        label { display: block; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
-        .btn { padding: 10px; background: #00509e; border: none; color: white; cursor: pointer; width: 100%; border-radius: 5px; font-size: 14px; }
-        .btn:hover { background: #003366; }
-
-        /* Pop-up styles */
-        .popup {
-            display: none;
-            background-color: #ffc107;
-            color: #333;
-            padding: 5px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f5;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(135deg, #5a10b4 0%, #1f65c9 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar ul li.active, .sidebar ul li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar ul li i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .sidebar ul li span {
+            font-size: 16px;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 300px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        input, select {
+            width: 45%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 12px;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            margin-top: 2px;
+            box-sizing: border-box;
+        }
+        /* Specific styles for increased size fields */
+        .large-input {
+            width: 100%;  /* Increase the width to match other larger fields */
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+        button {
+            background: #1abc9c;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #16a085;
+        }
+        .error {
+            color: red; 
+            font-size: 12px; 
+            display: none; 
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2>ACGL</h2>
-        <ul>
-            <li class="completed">Level 1: Personal Details</li>
-            <li>Level 2: Document Verification</li>
-        </ul>
-    </div>
     <div class="container">
-        <h2>Personal Details</h2>
-        <form method="post" action="/save_vendor_details/">
-            {% csrf_token %}
-            <div class="form-group">
-                <label>Name:</label>
-                <input type="text" id="name" name="fullname" required>
-            </div>
-            <div class="form-group">
-                <label>Vendor Name:</label>
-                <input type="text" id="vendor-name" name="vendorname" required>
-            </div>
-            <div class="form-group">
-                <label>Username:</label>
-                <input type="text" id="username" name="username" required onfocus="showPopup('username-popup')" onblur="hidePopup('username-popup')">
-                <div id="username-popup" class="popup">Only letters, numbers, and '_' allowed. Must be unique.</div>
-            </div>
-            <div class="form-group">
-                <label>Password:</label>
-                <input type="password" id="password" name="password" required onfocus="showPopup('password-popup')" onblur="hidePopup('password-popup')">
-                <div id="password-popup" class="popup">Must contain at least 1 special character, 1 lowercase letter, and 1 number.</div>
-            </div>
-            <div class="form-group">
-                <label>Address:</label>
-                <input type="text" id="address" name="address" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number:</label>
-                <input type="text" id="phone" name="phonenumber" required>
-            </div>
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label>Date of Birth:</label>
-                <input type="date" id="dob" name="dob" required>
-            </div>
-            <div class="form-group">
-                <label>GST No:</label>
-                <input type="text" id="gst" name="igst" required>
-            </div>
-            <button class="btn" type="submit">Next</button>
-        </form>
+        <div class="sidebar">
+            <ul>
+                <li class="active">
+                    <i class="fas fa-user"></i>
+                    <span>Personal Details</span>
+                </li>
+                <li>
+                    <i class="fas fa-university"></i>
+                    <span>Company Bank Details</span>
+                </li>
+                <li>
+                    <i class="fas fa-upload"></i>
+                    <span>Document Upload</span>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <h2>Vendor Registration - Personal Details</h2>
+            <form method="POST" action="/account/">
+                {% csrf_token %}
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Vendor Name</label>
+                        <input type="text" name="vendor_name" required>
+                                    
+                        <label>Business Since</label>
+                        <input type="date" name="business_since" required>
+            
+                        <div class="row">
+                            <div class="column">
+                                <label>Nature of Services</label>
+                                <input type="text" name="nature_of_services" class="large-input" required>
+                            </div>
+                            <div class="column">
+                                <div class="row">
+                                    <div class="column">
+                                        <label>Status</label>
+                                        <select name="status" class="large-input" required>
+                                            <option value="Service">Service</option>
+                                            <option value="Material">Material</option>
+                                            <option value="Both">Both</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <div class="row">
+                            <div class="column">
+                                <label>Address</label>
+                                <input type="text" name="address" class="large-input" required>
+                            </div>
+                            <div class="column">
+                                <label>State</label>
+                                <input type="text" name="state" class="large-input" required>
+                            </div>
+                        </div>
+            
+                        <div class="row">
+                            <div class="column">
+                                <label>City</label>
+                                <input type="text" name="city" class="large-input" required>
+                            </div>
+                            <div class="column">
+                                <label>PIN Code</label>
+                                <input type="text" name="pin_code" class="large-input" required>
+                            </div>
+                        </div>
+            
+                        <label>Username</label>
+                        <input type="text" id="username" name="username" pattern="^[a-zA-Z0-9_]+$" required>
+                        <span class="error" id="username-error">Only letters, numbers, and _ allowed.</span>
+                                    
+                        <label>Password</label>
+                        <input type="password" id="password" name="password" required>
+                        <span class="error" id="password-error">Must include uppercase, lowercase, and special character.</span>
+                    </div>
+                </div>
+                <button type="submit">Next</button>
+            </form>            
+        </div>
     </div>
-
-    <script>
-        function showPopup(id) {
-            document.getElementById(id).style.display = "block";
-        }
-
-        function hidePopup(id) {
-            document.getElementById(id).style.display = "none";
-        }
-    </script>
 </body>
 </html>
