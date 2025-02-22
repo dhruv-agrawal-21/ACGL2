@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        <style>
+            .container {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .title {
+                border-radius: 25px;
+                padding: 20px;
+                background-color: #333;
+                text-align: center;
+                color: white;
+            }
+
+            .rfq-details,
+            .edit-mode {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+
+            .rfq-details > div,
+            .edit-mode > div {
+                background: #333;
+                color: white;
+                padding: 10px;
+                border-radius: 25px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .rfq-details > div:first-child.open {
+                border: 2px solid green;
+            }
+
+            .rfq-details > div:first-child.closed {
+                border: 2px solid red;
+            }
+
+            .edit-mode > div:nth-child(5),
+            .rfq-details > div:nth-child(5) {
+                grid-column: span 4;
+            }
+
+            .rfq-details > div:nth-child(5),
+            .edit-mode textarea[name="about"] {
+                height: 5em;
+            }
+
+            input,
+            textarea,
+            select {
+                background: #414040;
+                color: white;
+                border-radius: 5px;
+                width: 100%;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 5px;
+                color: white;
+            }
+
+            input,
+            textarea,
+            select,
+            button {
+                padding: 10px;
+                margin-bottom: 10px;
+                box-sizing: border-box;
+            }
+
+            button {
+                cursor: pointer;
+                background: #333;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                margin: 0 5px;
+                width: 100%;
+                height: 40px;
+                transition: background-color 0.3s ease;
+            }
+
+            button:hover {
+                background-color: #555;
+            }
+
+            .edit-mode > div:last-child {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                justify-content: center;
+                align-items: center;
+                background: none;
+            }
+
+            .edit-button {
+                width: 170px;
+                padding: 10px;
+                display: inline-block;
+                margin: 0 auto;
+            }
+
+            .delete-button {
+                width: 170px;
+                padding: 10px;
+                display: inline-block;
+                margin: 0 auto;
+                background: red;
+            }
+
+            .response-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(2, auto);
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .response-grid > .pill {
+                background: #333;
+                color: white;
+                padding: 10px;
+                border-radius: 25px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .response-grid > .pill.status.accepted {
+                border: 2px solid green;
+            }
+
+            .response-grid > .pill.status.pending {
+                border: 2px solid yellow;
+            }
+
+            .response-grid > .pill.status.rejected {
+                border: 2px solid red;
+            }
+
+            .change-response {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .change-response > button {
+                cursor: pointer;
+                background: #333;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                width: 200px;
+                height: 50px;
+                transition: background-color 0.3s ease;
+            }
+
+            .change-response > button:hover {
+                background-color: #555;
+            }
+
+            .back-button {
+                cursor: pointer;
+                background: #333;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                width: 200px;
+                height: 50px;
+                transition: background-color 0.3s ease;
+                margin: 20px 0;
+            }
+
+            .back-button:hover {
+                background-color: #555;
+            }
+        </style>
+
+        <h2>Current RFQ</h2>
+        <div class="pill title">
+            <h2>{{ rfq.name }}</h2>
+        </div>
+        {% if edit_mode %}
+            <div class="edit-mode">
+                <div>
+                    <label>Status:</label>
+                    <select name="status" value="{{ rfq_updates.status }}">
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Contract Start Date:</label>
+                    <input type="date" name="contractStartDate" value="{{ rfq_updates.contractStartDate }}">
+                </div>
+                <div>
+                    <label>Annual Volume:</label>
+                    <input type="number" name="annualVolume" value="{{ rfq_updates.annualVolume }}">
+                </div>
+                <div>
+                    <label>Contract Length:</label>
+                    <input type="number" name="contractLength" value="{{ rfq_updates.contractLength }}">
+                </div>
+                <div>
+                    <label>About:</label>
+                    <textarea name="about">{{ rfq_updates.about }}</textarea>
+                </div>
+                <div>
+                    <button onclick="submitChanges()">Submit Changes</button>
+                    <button onclick="toggleEditMode()">Cancel</button>
+                </div>
+            </div>
+        {% else %}
+            <div class="rfq-details">
+                <div class="pill {{ rfq.status|lower }}">
+                    <p>Status: {{ rfq.status }}</p>
+                </div>
+                <div>
+                    <p>Contract Start Date: {{ rfq.contractStartDate }}</p>
+                </div>
+                <div>
+                    <p>Annual Volume: {{ rfq.annualVolume }}</p>
+                </div>
+                <div>
+                    <p>Contract Length: {{ rfq.contractLength }}</p>
+                </div>
+                <div>
+                    <p class="about">{{ rfq.about }}</p>
+                </div>
+            </div>
+            <button class="edit-button" onclick="toggleEditMode()">Edit RFQ</button>
+            <button class="delete-button" onclick="deleteRfq()">Delete RFQ</button>
+        {% endif %}
+
+        <h2>Responses</h2>
+        {% for response in responses %}
+            <div>
+                <div class="response-grid">
+                    <div class="pill">
+                        <p>Submitted by: {{ response.createdBy }}</p>
+                    </div>
+                    <div class="pill">
+                        <p>Unit Price: {{ response.unitPrice }}</p>
+                    </div>
+                    <div class="pill">
+                        <p>Investment: {{ response.investment }}</p>
+                    </div>
+                    <div class="pill">
+                        <p>Currency: {{ response.currency }}</p>
+                    </div>
+                    <div class="pill status {{ response.status|lower }}">
+                        <p>Status: {{ response.status }}</p>
+                    </div>
+                    <div class="pill">
+                        <p>Comments: {{ response.comments }}</p>
+                    </div>
+                </div>
+                <div class="change-response">
+                    <button onclick="changeResponseStatus({{ response.id }}, '{{ response.status }}')">Change Response Status</button>
+                </div>
+            </div>
+        {% endfor %}
+        <a href="{% url 'outstandingrfqs' %}">
+            <button class="back-button">Go back</button>
+        </a>
+    </div>
+{% endblock %}

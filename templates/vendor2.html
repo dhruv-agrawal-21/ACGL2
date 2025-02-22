@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    /* General styles */
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    .sidebar {
+        width: 250px;
+        background-color:rgb(35, 91, 148); /* Matching sidebar background color to navbar */
+        color: #fff; /* White text color */
+        height: calc(100vh - 56px); /* Adjust height to be below navbar (56px is the typical navbar height) */
+        padding: 20px;
+        box-sizing: border-box;
+        position: fixed;
+        top: 56px; /* Position below the navbar */
+        left: 0;
+        z-index: 1000;
+        transition: all 0.3s;
+        border-right: 1px solid #444; /* Slightly lighter border */
+    }
+
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color:rgb(160, 190, 222);
+    }
+
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        color: #fff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .sidebar ul li a:hover, .sidebar ul li.active > a {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .sidebar ul li a i {
+        margin-right: 10px;
+    }
+
+    .sidebar ul li ul {
+        margin-left: 20px;
+        display: none;
+    }
+
+    .sidebar ul li.active ul {
+        display: block;
+    }
+
+    .content {
+        margin-left: 270px;
+        padding: 20px;
+        transition: margin-left 0.3s;
+        padding-top: 76px; /* Add padding to ensure content doesn't overlap with navbar */
+    }
+
+    .content h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 1px solid #dee2e6;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+<div class="sidebar" id="sidebar">
+    <h1>{{ company_name }}</h1>
+    <ul>
+        <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
+        <li><a href="/annexure"><i class="fas fa-chart-line"></i>Annexure</a></li>
+        <li class="active">
+            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>Master Data</a>
+            <ul>
+                <li class="active"><a href="/vendor1"><i class="fas fa-building"></i>Vendor Details</a></li>
+            </ul>
+        </li>
+        <li><a href="/ceo_dashboard"><i class="fas fa-file-alt"></i>Annexure Dashboard</a></li>
+        <li><a href="/ceo_review"><i class="fas fa-sync"></i>Review</a></li>
+        <li>
+            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>RFQ</a>
+            <ul>
+                <li><a href="/rfq">Create</a></li>
+                <li><a href="/rfq2">Change</a></li>
+                <li><a href="/rfq">Display</a></li>
+                <li><a href="/rfq2">Release</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<div class="content">
+    <h2>Vendor Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Vendor ID</th>
+                <th>Vendor Name</th>
+                <th>City</th>
+                <th>Status</th>
+                <th>Email</th>
+                <th>Phone number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.vendor_id }}</td>
+                <td>{{ vendor.vendor_name }}</td>
+                <td>{{ vendor.city }}</td>
+                <td>{{ vendor.status }}</td>
+                <td>{{vendor.email}}</td>
+                <td>{{vendor.phonenumber}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock body %}

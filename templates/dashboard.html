@@ -2,89 +2,62 @@
 
 {% block body %}
 <style>
-    /* Sidebar styling */
-    .sidebar {
-        width: 250px;
-        background-color: #2c3e50;
-        color: white;
-        height: 100vh;
+    /* General styles */
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    .content {
+        margin-left: 270px;
         padding: 20px;
-        box-sizing: border-box;
-        transition: transform 0.3s;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1000;
-        transform: translateX(-100%);
+        transition: margin-left 0.3s;
+        padding-top: 76px; /* Add padding to ensure content doesn't overlap with navbar */
     }
 
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .sidebar h2 {
-        text-align: center;
+    .content h1 {
+        font-size: 28px;
         margin-bottom: 20px;
     }
 
-    .sidebar ul {
-        list-style-type: none;
-        padding: 0;
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
     }
 
-    .sidebar ul li {
-        margin: 15px 0;
+    table, th, td {
+        border: 1px solid #dee2e6;
     }
 
-    .sidebar ul li a {
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #007bff;
         color: white;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-    }
-
-    .sidebar ul li a i {
-        margin-right: 10px;
-    }
-
-    .sidebar ul li ul {
-        margin-left: 20px;
-        display: none;
-    }
-
-    .sidebar ul li ul li {
-        margin: 10px 0;
-    }
-
-    .sidebar ul li.active ul {
-        display: block;
     }
 </style>
-<div class="sidebar" id="sidebar">
-    <h2>{{company_name}}</h2>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="content">
+    <h1>Dashboard</h1>
+</div>
+
+{% endblock %}
+
+{% comment %} <div class="sidebar" id="sidebar">
+    <h1>{{ company_name }}</h1>
     <ul>
         <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
-        <li><a href="#"><i class="fas fa-chart-line"></i>Logistics</a></li>
-        <li class="active">
-            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-sync"></i>Master Data</a>
-            <ul>
-                <li><a href="/vendor"><i class="fas fa-building"></i>Vendor Details</a></li>
-                <li><a href="#"><i class="fas fa-users"></i>User Details</a></li>
-            </ul>
-        </li>
-        <li><a href="#"><i class="fas fa-file-alt"></i>Inventory Management</a></li>
-        <li class="active">
-            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-tachometer-alt"></i>RFQ</a>
+        <li>
+            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>RFQ</a>
             <ul>
                 <li><a href="/rfq">Create</a></li>
                 <li><a href="/rfq2">Change</a></li>
-                <li><a href="/rfq2">Display</a></li>
-                <li><a href="/rfq">Release</a></li>
+                <li><a href="/rfq">Display</a></li>
+                <li><a href="/rfq2">Release</a></li>
             </ul>
         </li>
-        <li><a href="#"><i class="fas fa-sync"></i>Physical Inventory</a></li>
+        <li><a href="/account2"><i class="fas fa-sync"></i>Review</a></li>
     </ul>
-</div>
-This is my body
-{% endblock body %}
+</div> {% endcomment %}

@@ -72,7 +72,7 @@
             color: #34495e;
         }
         input, select {
-            width: 45%;
+            width: 80%;
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
@@ -81,7 +81,7 @@
         }
         /* Specific styles for increased size fields */
         .large-input {
-            width: 100%;  /* Increase the width to match other larger fields */
+            width: 50%;  /* Increase the width to match other larger fields */
         }
         .row {
             display: flex;
@@ -130,69 +130,91 @@
         </div>
         <div class="content">
             <h2>Vendor Registration - Personal Details</h2>
-            <form method="POST" action="/account/">
+            <form method="POST" action="{% url 'account' %}">
                 {% csrf_token %}
+            
                 <div class="form-container">
+                    {{ form.non_field_errors }}
+            
                     <div class="form-group">
-                        <label>Vendor Name</label>
-                        <input type="text" name="vendor_name" required>
-                                    
-                        <label>Business Since</label>
-                        <input type="date" name="business_since" required>
+                        <div class="row">
+                            <div class="column">
+                                <label>Vendor Name</label>
+                                {{ form.vendor_name }}
+                                <span class="error">{{ form.vendor_name.errors }}</span>
+                            </div>
+                            <div class="column">
+                                <label>Email</label>
+                                {{ form.email }}
+                                <span class="error">{{ form.email.errors }}</span>
+                            </div>
+                        </div>
             
                         <div class="row">
                             <div class="column">
-                                <label>Nature of Services</label>
-                                <input type="text" name="nature_of_services" class="large-input" required>
+                                <label>Business Since</label>
+                                {{ form.business_since }}
+                                <span class="error">{{ form.business_since.errors }}</span>
                             </div>
                             <div class="column">
-                                <div class="row">
-                                    <div class="column">
-                                        <label>Status</label>
-                                        <select name="status" class="large-input" required>
-                                            <option value="Service">Service</option>
-                                            <option value="Material">Material</option>
-                                            <option value="Both">Both</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                <label>Phone Number</label>
+                                {{ form.phonenumber }}
+                                <span class="error">{{ form.phonenumber.errors }}</span>
+                            </div>
+                        </div>
+            
+                        <div class="row">
+                            <div class="column">
+                                <label>Type of Company</label>
+                                {{ form.nature_of_services }}
+                                <span class="error">{{ form.nature_of_services.errors }}</span>
+                            </div>
+                            <div class="column">
+                                <label>Status</label>
+                                {{ form.status }}
+                                <span class="error">{{ form.status.errors }}</span>
                             </div>
                         </div>
             
                         <div class="row">
                             <div class="column">
                                 <label>Address</label>
-                                <input type="text" name="address" class="large-input" required>
+                                {{ form.address }}
+                                <span class="error">{{ form.address.errors }}</span>
                             </div>
                             <div class="column">
                                 <label>State</label>
-                                <input type="text" name="state" class="large-input" required>
+                                {{ form.state }}
+                                <span class="error">{{ form.state.errors }}</span>
                             </div>
                         </div>
             
                         <div class="row">
                             <div class="column">
                                 <label>City</label>
-                                <input type="text" name="city" class="large-input" required>
+                                {{ form.city }}
+                                <span class="error">{{ form.city.errors }}</span>
                             </div>
                             <div class="column">
                                 <label>PIN Code</label>
-                                <input type="text" name="pin_code" class="large-input" required>
+                                {{ form.pin_code }}
+                                <span class="error">{{ form.pin_code.errors }}</span>
                             </div>
                         </div>
             
                         <label>Username</label>
-                        <input type="text" id="username" name="username" pattern="^[a-zA-Z0-9_]+$" required>
-                        <span class="error" id="username-error">Only letters, numbers, and _ allowed.</span>
-                                    
+                        {{ form.username }}
+                        <span class="error">{{ form.username.errors }}</span>
+            
                         <label>Password</label>
-                        <input type="password" id="password" name="password" required>
-                        <span class="error" id="password-error">Must include uppercase, lowercase, and special character.</span>
+                        {{ form.password }}  <!-- Ensure this matches the form field name in forms.py -->
+                        <span class="error">{{ form.password.errors }}</span>
                     </div>
                 </div>
+            
                 <button type="submit">Next</button>
-            </form>            
-        </div>
+            </form>
+            
     </div>
 </body>
 </html>

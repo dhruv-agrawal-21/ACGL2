@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="content">
+    <h1>CFO Review Requirement</h1>
+    <table class="table table-bordered">
+        <tr>
+            <th>Requested By</th>
+            <td>{{ requirement.requested_by }}</td>
+        </tr>
+        <tr>
+            <th>Timestamp</th>
+            <td>{{ requirement.timestamp }}</td>
+        </tr>
+        <tr>
+            <th>Department</th>
+            <td>{{ requirement.department }}</td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td>{{ requirement.priority }}</td>
+        </tr>
+        <tr>
+            <th>Item Description</th>
+            <td>{{ requirement.item_description }}</td>
+        </tr>
+        <tr>
+            <th>Justification</th>
+            <td>{{ requirement.justification }}</td>
+        </tr>
+        <tr>
+            <th>Estimated Cost</th>
+            <td>{{ requirement.estimated_cost }}</td>
+        </tr>
+        <tr>
+            <th>Quotation Deadline</th>
+            <td>{{ requirement.quotation_deadline }}</td>
+        </tr>
+        <tr>
+            <th>Quantity/Duration</th>
+            <td>
+                {% if requirement.quantity %}
+                    {{ requirement.quantity }}
+                {% elif requirement.duration %}
+                    {{ requirement.duration }}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <form method="post" action="{% url 'cfo_review' requirement.id %}">
+        {% csrf_token %}
+        <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+        <div class="form-group">
+            <label for="modification_description">Modification Description</label>
+            <textarea id="modification_description" name="modification_description" class="form-control" rows="4"></textarea>
+        </div>
+        <button type="submit" name="action" value="modify" class="btn btn-warning">Modify</button>
+    </form>
+</div>
+{% endblock %}

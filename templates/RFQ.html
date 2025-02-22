@@ -1,133 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFQ Form</title>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            width: 800px;
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            background: #dbe5f1;
-            padding: 5px;
-            font-weight: bold;
-        }
-        .section {
-            margin-top: 10px;
-            padding: 10px;
-            background: #e8f0fa;
-            border-radius: 5px;
-        }
-        .row {
-            display: flex;
-            justify-content: space-between;
-        }
-        .column {
-            width: 48%;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        input, select {
-            width: calc(100% - 10px);
-            padding: 5px;
-            margin-top: 3px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-        }
-        .checkbox-label input {
-            width: auto;
-            margin-left: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background: #dbe5f1;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">RFQ Form</div>
-        
-        <div class="section">
-            <div class="row">
-                <div class="column">
-                    <label>RFQ Type
-                        <select>
-                            <option value="101">101-Service</option>
-                            <option value="201">201-Materials</option>
-                        </select>
-                    </label>
-                    <label>RFQ Date <input type="date" class="date-input" id="rfq-date"></label>
-                </div>
-                <div class="column">
-                    <label class="checkbox-label">Quotation Deadline <input type="checkbox" checked></label>
-                    <label><input type="date" class="date-input" id="quotation-deadline"></label>
-                    <label>RFQ <input type="text"></label>
-                </div>
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    .container {
+        margin-left: 20px; /* Adjust to align the container to the left */
+        padding: 20px;
+        max-width: calc(100% - 290px); /* Adjust the max-width to ensure it fits within the viewport */
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+    .header {
+        background: #dbe5f1;
+        padding: 5px;
+        font-weight: bold;
+    }
+
+    .section {
+        margin-top: 10px;
+        padding: 10px;
+        background: #e8f0fa;
+        border-radius: 5px;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap; /* Allow items to wrap to the next line */
+        justify-content: space-between;
+    }
+
+    .column {
+        width: 48%;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 5px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+    }
+
+    .checkbox-label input {
+        width: auto;
+        margin-left: 5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 5px;
+        text-align: left;
+    }
+
+    th {
+        background: #dbe5f1;
+    }
+</style>
+<div class="container">
+    <div class="header">RFQ Form</div>
+    
+    <div class="section">
+        <div class="row">
+            <div class="column">
+                <label>RFQ Type
+                    <select>
+                        <option value="101">101-Service</option>
+                        <option value="201">201-Materials</option>
+                    </select>
+                </label>
+                <label>RFQ Date <input type="date" class="date-input" id="rfq-date"></label>
+            </div>
+            <div class="column">
+                <label class="checkbox-label">Quotation Deadline <input type="checkbox" checked></label>
+                <label><input type="date" class="date-input" id="quotation-deadline"></label>
+                <label>RFQ <input type="text"></label>
             </div>
         </div>
-        
-        <div class="section">
-            <div class="header">Organizational Data</div>
-            <div class="row">
-                <div class="column">
-                    <label>Purch. Organization <input type="text"></label>
-                </div>
-                <div class="column">
-                    <label>Purchasing Group <input type="text"></label>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="header">Default Data for Items</div>
-            <div class="row">
-                <div class="column">
-                    <label>Item Category <input type="text"></label>
-                    <label>Delivery Date <input type="date" class="date-input" id="delivery-date"></label>
-                    <label>Plant <input type="text" value="1AC"></label>
-                </div>
-                <div class="column">
-                    <label>Storage Location <input type="text"></label>
-                    <label>Material Group <input type="text"></label>
-                    <label>Req. Tracking Number <input type="text"></label>
-                </div>
-            </div>
-        </div>
-        
     </div>
+    
+    <div class="section">
+        <div class="header">Organizational Data</div>
+        <div class="row">
+            <div class="column">
+                <label>Purch. Organization <input type="text"></label>
+            </div>
+            <div class="column">
+                <label>Purchasing Group <input type="text"></label>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="header">Default Data for Items</div>
+        <div class="row">
+            <div class="column">
+                <label>Item Category <input type="text"></label>
+                <label>Delivery Date <input type="date" class="date-input" id="delivery-date"></label>
+                <label>Plant <input type="text" value="1AC"></label>
+            </div>
+            <div class="column">
+                <label>Storage Location <input type="text"></label>
+                <label>Material Group <input type="text"></label>
+                <label>Req. Tracking Number <input type="text"></label>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-    <!-- jQuery and jQuery UI -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-</body>
-</html>
+<!-- jQuery and jQuery UI -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+{% endblock %}

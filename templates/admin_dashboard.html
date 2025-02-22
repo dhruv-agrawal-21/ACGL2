@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    .content {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+    }
+    h1 {
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        font-family: 'Poppins', sans-serif;
+    }
+    .table-container {
+        overflow-x: auto;
+        padding: 10px;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #f9f9f9;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+    }
+    .table thead {
+        background: #007bff;
+        color: #fff;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+    .table th, .table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .table tbody tr:nth-child(even) {
+        background: #f2f2f2;
+    }
+    .table tbody tr:hover {
+        background: #e0e0e0;
+    }
+</style>
+
+<div class="content">
+    <div class="container">
+        <h1>Annexure Dashboard</h1>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Requested By</th>
+                        <th>Timestamp</th>
+                        <th>Department</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Next Approver</th>
+                        <th>Modification Description</th>
+                        <th>Deliver Address</th>
+                        <th>Submit</th>  <!-- New Column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for requirement in requirements %}
+                    <tr>
+                        <td>{{ requirement.requested_by }}</td>
+                        <td>{{ requirement.timestamp }}</td>
+                        <td>{{ requirement.department }}</td>
+                        <td>{{ requirement.priority }}</td>
+                        <td class="status">{{ requirement.status }}</td>
+                        <td>{{ requirement.next_approver }}</td>
+                        <td>{{ requirement.modification_description }}</td>
+                        <td>
+                            <input type="text" class="delivery-address" data-id="{{ requirement.id }}" 
+                                   value="{{ requirement.delivery_address|default:'Pune' }}">
+                        </td>
+                        <td>
+                            <button class="submit-btn" data-id="{{ requirement.id }}" 
+                                {% if requirement.status != "Approved by CEO" %}disabled{% endif %}>
+                                Submit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>                
+            </table>
+        </div>
+    </div>
+    {% comment %} <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".submit-btn").forEach(function (button) {
+                let row = button.closest("tr");
+                let status = row.querySelector(".status").innerText.trim();
+                
+                // Enable button only if status is "Approved by CEO"
+                if (status === "Approved by CEO") {
+                    button.disabled = false;
+                } else {
+                    button.disabled = true;
+                }
+        
+                // Handle Submit Click
+                button.addEventListener("click", function () {
+                    let requirementId = button.getAttribute("data-id");
+                    let deliveryAddressInput = row.querySelector(".delivery-address");
+                    let deliveryAddress = deliveryAddressInput.value.trim();
+        
+                    // Send AJAX request to update delivery address before submission
+                    fetch(`/update-delivery-address/${requirementId}/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"  // Include CSRF token
+                        },
+                        body: JSON.stringify({ "delivery_address": deliveryAddress })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Delivery address updated successfully!");
+                        } else {
+                            alert("Failed to update delivery address.");
+                        }
+                    });
+                });
+            });
+        });
+        </script>         {% endcomment %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".submit-btn").forEach(function (button) {
+                    let row = button.closest("tr");
+                    let status = row.querySelector(".status").innerText.trim();
+                    
+            
+                    // Enable button only if status is "Approved by CEO"
+                    button.disabled = status !== "Approved by CEO";
+            
+                    // Add click event listener
+                    button.addEventListener("click", function () {
+                        console.log("Submit button clicked!");  // Debug log
+                        let requirementId = button.dataset.id;
+                        let currentAddress = row.querySelector(".delivery-address").value.trim() || "Pune";
+                        let deliveryAddress = prompt("Enter delivery address:", currentAddress);  // User input
+            
+                        if (deliveryAddress !== null) {  // If user provided an address
+                            updateDeliveryAddress(requirementId, deliveryAddress);
+                        }
+                    });
+                });
+            });
+            
+            // Function to send AJAX request to update delivery address
+            function updateDeliveryAddress(requirementId, deliveryAddress) {
+            
+                fetch(`/update_delivery_address/${requirementId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCSRFToken()  // CSRF protection
+                    },
+                    body: JSON.stringify({ delivery_address: deliveryAddress })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ Server Response:", data);  // Debug log
+            
+                    if (data.success) {
+                        alert("Delivery Address Updated! Generating PDF...");
+                        window.location.href = `/generate_pdf/${requirementId}/`;  // Redirect to generate PDF
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Fetch Error:", error);
+                    alert("Fetch failed! Check console.");
+                });
+            }
+            // Function to get CSRF Token
+            function getCSRFToken() {
+                return document.cookie.split('; ')
+                    .find(row => row.startsWith("csrftoken="))
+                    ?.split("=")[1];
+            }                                    
+        </script>    
+    </div>
+{% endblock %}

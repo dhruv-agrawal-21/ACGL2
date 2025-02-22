@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    .content {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    .content h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 1px solid #dee2e6;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+<div class="content">
+    <h1>CFO Review Requirements</h1>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Requested By</th>
+                <th>Date</th>
+                <th>Department</th>
+                <th>Type</th>
+                <th>Item Description</th>
+                <th>Status</th>
+                <th>Quantity/Duration</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for requirement in requirements %}
+            <tr>
+                <td>{{ requirement.requested_by }}</td>
+                <td>{{ requirement.date }}</td>
+                <td>{{ requirement.department }}</td>
+                <td>{{ requirement.priority }}</td>
+                <td>{{ requirement.item_description }}</td>
+                <td>{{ requirement.status }}</td>
+                <td>
+                    {% if requirement.quantity %}
+                        {{ requirement.quantity }}
+                    {% elif requirement.duration %}
+                        {{ requirement.duration }}
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'cfo_review' requirement.id %}" class="btn btn-primary">Review</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

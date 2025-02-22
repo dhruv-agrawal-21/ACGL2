@@ -201,27 +201,86 @@
             </div>
         </div>
     </nav>
+    <style>
+    /* Sidebar styling */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        height: 100vh;
+        padding: 20px;
+        box-sizing: border-box;
+        transition: transform 0.3s;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+    }
 
-    <div class="sidebar" id="sidebar">
-        <h2>{{company_name}}</h2>
-        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-        <ul>
-            <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
-            <li><a href="#"><i class="fas fa-chart-line"></i>Logistics</a></li>
-            <li><a href="#"><i class="fas fa-sync"></i>Master data</a></li>
-            <li><a href="#"><i class="fas fa-file-alt"></i>Inventory Management</a></li>
-            <li class="active">
-                <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-tachometer-alt"></i>RFQ</a>
-                <ul>
-                    <li><a href="/rfq">Create</a></li>
-                    <li><a href="/rfq2">Change</a></li>
-                    <li><a href="/rfq">Display</a></li>
-                    <li><a href="/rfq2">Release</a></li>
-                </ul>
-            </li>
-            <li><a href="#"><i class="fas fa-sync"></i>Physical Inventory</a></li>
-        </ul>
-    </div>
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar ul li a i {
+        margin-right: 10px;
+    }
+
+    .sidebar ul li ul {
+        margin-left: 20px;
+        display: none;
+    }
+
+    .sidebar ul li ul li {
+        margin: 10px 0;
+    }
+
+    .sidebar ul li.active ul {
+        display: block;
+    }
+</style>
+<div class="sidebar" id="sidebar">
+    <h2>{{company_name}}</h2>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <ul>
+        <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
+        <li><a href="#"><i class="fas fa-chart-line"></i>Logistics</a></li>
+        <li><a href="#"><i class="fas fa-sync"></i>Master data</a></li>
+        <li><a href="#"><i class="fas fa-file-alt"></i>Inventory Management</a></li>
+        <li class="active">
+            <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>RFQ</a>
+            <ul>
+                <li><a href="/rfq">Create</a></li>
+                <li><a href="/rfq2">Change</a></li>
+                <li><a href="/rfq2">Display</a></li>
+                <li><a href="/rfq">Release</a></li>
+            </ul>
+        </li>
+        <li><a href="#"><i class="fas fa-sync"></i>Physical Inventory</a></li>
+    </ul>
+</div>
+
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

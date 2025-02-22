@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    .content {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    .content h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 1px solid #dee2e6;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+<div class="content">
+    <div class="container">
+        <h1>CFO Dashboard</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Requested By</th>
+                    <th>Timestamp</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Next Approver</th>
+                    <th>Modification Description</th>
+                    <th>Quantity/Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for requirement in requirements %}
+                <tr>
+                    <td>{{ requirement.requested_by }}</td>
+                    <td>{{ requirement.timestamp }}</td>
+                    <td>{{ requirement.department }}</td>
+                    <td>{{ requirement.priority }}</td>
+                    <td>{{ requirement.status }}</td>
+                    <td>{{ requirement.next_approver }}</td>
+                    <td>{{ requirement.modification_description }}</td>
+                    <td>
+                        {% if requirement.quantity %}
+                            {{ requirement.quantity }}
+                        {% elif requirement.duration %}
+                            {{ requirement.duration }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
