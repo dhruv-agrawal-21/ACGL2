@@ -4,7 +4,9 @@
 <style>
     .form-container {
         max-width: 800px;
-        margin: 21px auto;
+        margin: 21px 0;
+        margin-left: 1px;
+        margin-top: 50px;
         padding: 20px;
         background-color: #f9f9f9;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -90,7 +92,7 @@
         </div>
         <div class="form-group">
             <label for="date">Date</label>
-            <input type="date" id="date" name="date" required class="form-control">
+            <input type="datetime-local" id="date" name="date" required class="form-control" readonly>
         </div>
     </div>
     
@@ -153,6 +155,13 @@
 </div>
 
 <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16); // Format to YYYY-MM-DDTHH:MM
+        document.getElementById("date").value = formattedDate;
+    });
+
     document.getElementById('add-requirement').addEventListener('click', function() {
         let container = document.getElementById('requirement-container');
         let newRequirement = container.firstElementChild.cloneNode(true);

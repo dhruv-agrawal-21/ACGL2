@@ -3,57 +3,144 @@
 {% block body %}
 <style>
     .content {
-        padding: 20px;
-        display: flex;
-        justify-content: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        padding: 40px;
+        margin-left: 160px;
+        background: #f4f7fc;
     }
+    
     .container {
         max-width: 1200px;
+        width: 100%;
         margin: auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         overflow-x: auto;
     }
+    
     h1 {
         text-align: center;
-        font-size: 28px;
+        font-size: 42px;
         font-weight: bold;
-        margin-bottom: 15px;
-        color: #333;
-        font-family: 'Poppins', sans-serif;
+        margin-bottom: 7px;
+        color: #343a40;
     }
+    
     .table-container {
         overflow-x: auto;
-        padding: 10px;
+        padding: 15px;
     }
+    
     .table {
         width: 100%;
         border-collapse: collapse;
-        background: #f9f9f9;
-        font-family: 'Roboto', sans-serif;
-        font-size: 16px;
+        margin-top: 20px;
+        background: #ffffff;
     }
-    .table thead {
-        background: #007bff;
-        color: #fff;
-        text-align: left;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
+    
     .table th, .table td {
         padding: 12px;
-        border: 1px solid #ddd;
         text-align: left;
+        border: 1px solid #dee2e6;
     }
-    .table tbody tr:nth-child(even) {
-        background: #f2f2f2;
+    
+    .table th {
+        background-color: #007bff;
+        color: white;
     }
+    
     .table tbody tr:hover {
-        background: #e0e0e0;
+        background-color: #f1f1f1;
     }
+    
+    /* Fixing "Modification Description" Column */
+    .table th:nth-child(8), .table td:nth-child(8) {
+        width: 180px;
+        max-width: 180px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    /* Fixing "Delivery Address" Column - Increased size */
+    .table th:nth-child(9), .table td:nth-child(9) {
+        width: 500px; /* Doubled the size */
+        max-width: 500px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    /* Ensure input inside "Delivery Address" does not overflow */
+    .table td:nth-child(9) input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 5px;
+    }
+    
+    /* Adjust Timestamp Column */
+    .table th:nth-child(2), .table td:nth-child(2) {
+        width: 150px; /* Increased width */
+        text-align: center;
+        white-space: pre-line; /* Forces date on first line, time on second */
+    }
+    
+    /* Submit Button Styling - Changed to Green */
+    .table td:nth-child(10) button {
+        background-color: #28a745; /* Green */
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    /* Disabled button styling */
+    .table td:nth-child(10) button:disabled {
+        background-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+    }
+    
+    /* Keep hover effect only for enabled buttons */
+    .table td:nth-child(10) button:hover:enabled {
+        background-color: #218838; /* Darker Green */
+    }
+    
+    /* Prevent submit button from breaking layout */
+    .table td:nth-child(10) {
+        white-space: nowrap;
+        text-align: center;
+    }
+    .table td:nth-child(11) button {
+        background-color: #28a745; /* Green */
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    /* Disabled Send Button Styling */
+    .table td:nth-child(11) button:disabled {
+        background-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+    }
+    
+    /* Hover Effect for Enabled Send Buttons */
+    .table td:nth-child(11) button:hover:enabled {
+        background-color: #218838; /* Darker Green */
+    }
+    
+    /* Prevent Send Button from Breaking Layout */
+    .table td:nth-child(11) {
+        white-space: nowrap;
+        text-align: center;
+    }
+
 </style>
 
 <div class="content">
@@ -65,13 +152,15 @@
                     <tr>
                         <th>Requested By</th>
                         <th>Timestamp</th>
+                        <th>RFQ NO</th>
                         <th>Department</th>
                         <th>Type</th>
                         <th>Status</th>
                         <th>Next Approver</th>
                         <th>Modification Description</th>
-                        <th>Deliver Address</th>
+                        <th>Delivery Address</th>
                         <th>Submit</th>  <!-- New Column -->
+                        <th>Send</th>  <!-- New Column -->
                     </tr>
                 </thead>
                 <tbody>
@@ -79,6 +168,7 @@
                     <tr>
                         <td>{{ requirement.requested_by }}</td>
                         <td>{{ requirement.timestamp }}</td>
+                        <td>{{requirement.rfq_no}}</td>
                         <td>{{ requirement.department }}</td>
                         <td>{{ requirement.priority }}</td>
                         <td class="status">{{ requirement.status }}</td>
@@ -94,52 +184,18 @@
                                 Submit
                             </button>
                         </td>
+                        <td>
+                            <button class="send-btn" data-id="{{ requirement.id }}" 
+                                {% if requirement.status != "Approved by CEO" %}disabled{% endif %}>
+                                Send
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>                
             </table>
         </div>
     </div>
-    {% comment %} <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".submit-btn").forEach(function (button) {
-                let row = button.closest("tr");
-                let status = row.querySelector(".status").innerText.trim();
-                
-                // Enable button only if status is "Approved by CEO"
-                if (status === "Approved by CEO") {
-                    button.disabled = false;
-                } else {
-                    button.disabled = true;
-                }
-        
-                // Handle Submit Click
-                button.addEventListener("click", function () {
-                    let requirementId = button.getAttribute("data-id");
-                    let deliveryAddressInput = row.querySelector(".delivery-address");
-                    let deliveryAddress = deliveryAddressInput.value.trim();
-        
-                    // Send AJAX request to update delivery address before submission
-                    fetch(`/update-delivery-address/${requirementId}/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": "{{ csrf_token }}"  // Include CSRF token
-                        },
-                        body: JSON.stringify({ "delivery_address": deliveryAddress })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("Delivery address updated successfully!");
-                        } else {
-                            alert("Failed to update delivery address.");
-                        }
-                    });
-                });
-            });
-        });
-        </script>         {% endcomment %}
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 document.querySelectorAll(".submit-btn").forEach(function (button) {

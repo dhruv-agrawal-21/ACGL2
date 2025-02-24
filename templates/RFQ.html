@@ -2,132 +2,293 @@
 
 {% block body %}
 <style>
+    .content {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        padding: 40px;
+        margin-left: 160px; /* Adjust based on your sidebar width */
+        overflow-x: auto; /* Enable horizontal scrolling */
+    }
+
     .container {
-        margin-left: 20px; /* Adjust to align the container to the left */
+        background: #ffffff;
         padding: 20px;
-        max-width: calc(100% - 290px); /* Adjust the max-width to ensure it fits within the viewport */
-        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow for the container */
+        max-width: 95%; /* Reduce the max-width to reduce horizontal length */
+        margin: auto; /* Center the container */
+        overflow-x: auto; /* Enable horizontal scrolling for the container */
     }
 
-    .header {
-        background: #dbe5f1;
-        padding: 5px;
+    .content h1 {
+        font-size: 36px;
         font-weight: bold;
+        margin-bottom: 20px;
+        color: #343a40;
+        text-align: center; /* Center the heading */
     }
 
-    .section {
-        margin-top: 10px;
-        padding: 10px;
-        background: #e8f0fa;
-        border-radius: 5px;
+    .search-input {
+        margin-bottom: 20px;
     }
 
-    .row {
-        display: flex;
-        flex-wrap: wrap; /* Allow items to wrap to the next line */
-        justify-content: space-between;
+    .search-input input {
+        padding: 8px;
+        width: 200px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
     }
 
-    .column {
-        width: 48%;
-        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    .search-input button {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
     }
 
-    label {
-        display: block;
-        font-weight: bold;
-        margin-top: 5px;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 5px;
-        margin-top: 3px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    }
-
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-    }
-
-    .checkbox-label input {
-        width: auto;
-        margin-left: 5px;
+    .search-input button:hover {
+        background-color: #0056b3;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
-        background: white;
+        margin-top: 20px;
+        background: #fff;
+        min-width: 1200px; /* Minimum width to ensure all columns are visible */
     }
 
-    th, td {
-        border: 1px solid #ccc;
-        padding: 5px;
+    table th, table td {
+        padding: 12px;
         text-align: left;
+        border: 1px solid #dee2e6;
     }
 
-    th {
-        background: #dbe5f1;
+    table th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .checkbox-cell {
+        width: 30px; /* Fixed width for checkbox column */
+    }
+
+    @media (max-width: 768px) {
+        .content {
+            padding: 15px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        table th, table td {
+            padding: 8px;
+        }
+    }
+
+    /* Responsive table for smaller screens */
+    @media (max-width: 600px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        thead tr {
+            display: none;
+        }
+
+        tr {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        td:before {
+            content: attr(data-label);
+            font-weight: bold;
+            color: #333;
+        }
     }
 </style>
-<div class="container">
-    <div class="header">RFQ Form</div>
-    
-    <div class="section">
-        <div class="row">
-            <div class="column">
-                <label>RFQ Type
-                    <select>
-                        <option value="101">101-Service</option>
-                        <option value="201">201-Materials</option>
-                    </select>
-                </label>
-                <label>RFQ Date <input type="date" class="date-input" id="rfq-date"></label>
-            </div>
-            <div class="column">
-                <label class="checkbox-label">Quotation Deadline <input type="checkbox" checked></label>
-                <label><input type="date" class="date-input" id="quotation-deadline"></label>
-                <label>RFQ <input type="text"></label>
-            </div>
-        </div>
-    </div>
-    
-    <div class="section">
-        <div class="header">Organizational Data</div>
-        <div class="row">
-            <div class="column">
-                <label>Purch. Organization <input type="text"></label>
-            </div>
-            <div class="column">
-                <label>Purchasing Group <input type="text"></label>
-            </div>
-        </div>
-    </div>
-    
-    <div class="section">
-        <div class="header">Default Data for Items</div>
-        <div class="row">
-            <div class="column">
-                <label>Item Category <input type="text"></label>
-                <label>Delivery Date <input type="date" class="date-input" id="delivery-date"></label>
-                <label>Plant <input type="text" value="1AC"></label>
-            </div>
-            <div class="column">
-                <label>Storage Location <input type="text"></label>
-                <label>Material Group <input type="text"></label>
-                <label>Req. Tracking Number <input type="text"></label>
-            </div>
-        </div>
-    </div>
-    
-</div>
 
-<!-- jQuery and jQuery UI -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<div class="content">
+    <div class="container">
+        <h1>RFQ Responses</h1>
+        <div class="search-input">
+            <label for="rfq-input">Enter RFQ Number:</label>
+            <input type="text" id="rfq-input" placeholder="RFQ Number">
+            <button id="search-button">Search</button>
+        </div>
+        <!-- Add action buttons -->
+        <div class="action-buttons">
+            <button id="send-button">Send to Another Page</button>
+            <button id="delete-button">Delete Permanently</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th class="checkbox-cell"></th> <!-- Checkbox column -->
+                    <th>RFQ Number</th>
+                    <th>Date Submitted</th>
+                    <th>Response Deadline</th>
+                    <th>Vendor Code</th>
+                    <th>Company Name</th>
+                    <th>Contact Person</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Item Number</th>
+                    <th>Description</th>
+                    <th>Specification</th>
+                    <th>Per Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                    <th>GST (%)</th>
+                    <th>GST Amount</th>
+                    <th>Total Amount</th>
+                    <th>Attachment</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                {% for response in vendors %}
+                <tr data-rfq="{{ response.rfq_number }}" data-total-amount="{{ response.total_amount }}">
+                    <td class="checkbox-cell"><input type="checkbox" class="rfq-checkbox" data-rfq="{{ response.rfq_number }}"></td> <!-- Checkbox -->
+                    <td data-label="RFQ Number">{{ response.rfq_number }}</td>
+                    <td data-label="Date Submitted">{{ response.date_submitted }}</td>
+                    <td data-label="Response Deadline">{{ response.response_deadline }}</td>
+                    <td data-label="Vendor Code">{{ response.vendor_code.vendor_code }}</td>
+                    <td data-label="Company Name">{{ response.company_name }}</td>
+                    <td data-label="Contact Person">{{ response.contact_person }}</td>
+                    <td data-label="Phone">{{ response.phone }}</td>
+                    <td data-label="Email">{{ response.email }}</td>
+                    <td data-label="Address">{{ response.address }}</td>
+                    <td data-label="Item Number">{{ response.item_number }}</td>
+                    <td data-label="Description">{{ response.description }}</td>
+                    <td data-label="Specification">{{ response.specification }}</td>
+                    <td data-label="Per Unit Price">{{ response.per_unit_price }}</td>
+                    <td data-label="Quantity">{{ response.quantity }}</td>
+                    <td data-label="Total Price">{{ response.total_price }}</td>
+                    <td data-label="GST (%)">{{ response.gst }}</td>
+                    <td data-label="GST Amount">{{ response.gst_amount }}</td>
+                    <td data-label="Total Amount">{{ response.total_amount }}</td>
+                    <td data-label="Attachment">
+                        {% if response.attachment %}
+                            <a href="{{ response.attachment.url }}" target="_blank">Download</a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    // Search functionality (existing code)
+    document.getElementById('search-button').addEventListener('click', function () {
+        const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#table-body tr');
+        rows.forEach(row => {
+            const rowRfq = row.getAttribute('data-rfq').toLowerCase();
+            if (rowRfq.includes(rfqNumber)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Sort rows by total_amount in descending order
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+        visibleRows.sort((a, b) => {
+            const amountA = parseFloat(a.getAttribute('data-total-amount'));
+            const amountB = parseFloat(b.getAttribute('data-total-amount'));
+            return amountA - amountB; // Descending order
+        });
+
+        // Re-append sorted rows to the table body
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        visibleRows.forEach(row => tbody.appendChild(row));
+    });
+
+    // Function to get selected RFQs
+    function getSelectedRFQs() {
+        const checkboxes = document.querySelectorAll('.rfq-checkbox:checked');
+        const selectedRFQs = [];
+        checkboxes.forEach(checkbox => {
+            selectedRFQs.push(checkbox.getAttribute('data-rfq'));
+        });
+        return selectedRFQs;
+    }
+
+    // Send to another page
+    document.getElementById('send-button').addEventListener('click', function () {
+        const selectedRFQs = getSelectedRFQs();
+        if (selectedRFQs.length === 0) {
+            alert('Please select at least one RFQ.');
+            return;
+        }
+        // Send selected RFQs to Django view via AJAX or form submission
+        fetch('/send-to-another-page/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+            },
+            body: JSON.stringify({ rfqs: selectedRFQs }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Selected RFQs have been sent to another page.');
+                window.location.href = '/another-page/'; // Redirect to the new page
+            } else {
+                alert('Failed to send RFQs.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Delete permanently
+    document.getElementById('delete-button').addEventListener('click', function () {
+        const selectedRFQs = getSelectedRFQs();
+        if (selectedRFQs.length === 0) {
+            alert('Please select at least one RFQ.');
+            return;
+        }
+        if (confirm('Are you sure you want to delete the selected RFQs permanently?')) {
+            // Send selected RFQs to Django view for deletion
+            fetch('/delete-rfqs/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                },
+                body: JSON.stringify({ rfqs: selectedRFQs }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Selected RFQs have been deleted.');
+                    window.location.reload(); // Refresh the page
+                } else {
+                    alert('Failed to delete RFQs.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+</script>
 {% endblock %}

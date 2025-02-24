@@ -4,58 +4,123 @@
 <style>
     .content {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        padding: 40px;
+        margin-left: 160px; /* Adjust based on your sidebar width */
     }
 
-    .content h2 {
-        font-size: 28px;
+    .container {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow for the container */
+        max-width: 1200px; /* Limit the width of the container */
+        margin: auto; /* Center the container */
+    }
+    .content h1 {
+        font-size: 36px;
+        font-weight: bold;
         margin-bottom: 20px;
+        color: #343a40;
+        text-align: center; /* Center the heading */
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        background: #fff;
     }
 
-    table, th, td {
+    table th, table td {
+        padding: 12px;
+        text-align: left;
         border: 1px solid #dee2e6;
     }
 
-    th, td {
-        padding: 10px;
-        text-align: left;
-    }
-
-    th {
+    table th {
         background-color: #007bff;
         color: white;
     }
+
+    table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    @media (max-width: 768px) {
+        .content {
+            padding: 15px;
+        }
+        table th, table td {
+            padding: 8px;
+        }
+    }
+
+    /* Responsive table for smaller screens */
+    @media (max-width: 600px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        thead tr {
+            display: none;
+        }
+
+        tr {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        td:before {
+            content: attr(data-label);
+            font-weight: bold;
+            color: #333;
+        }
+    }
 </style>
 <div class="content">
-    <h2>Vendor Details</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Vendor ID</th>
-                <th>Vendor Name</th>
-                <th>City</th>
-                <th>Status</th>
-                <th>Email</th>
-                <th>Phone number</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for vendor in vendors %}
-            <tr>
-                <td>{{ vendor.vendor_id }}</td>
-                <td>{{ vendor.vendor_name }}</td>
-                <td>{{ vendor.city }}</td>
-                <td>{{ vendor.status }}</td>
-                <td>{{ vendor.email }}</td>
-                <td>{{ vendor.phonenumber }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="container">
+        <h1>Vendor Details</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vendor ID</th>
+                    <th>Vendor Code</th>
+                    <th>Vendor Name</th>
+                    <th>Vendor Type</th>
+                    <th>Phone number</th>
+                    <th>Email</th>
+                    <th>City</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vendor in vendors %}
+                <tr>
+                    <td data-label="Vendor ID">{{ vendor.vendor_id }}</td>
+                    <td data-label="Vendor Code">
+                        {% if vendor.bank_and_docs %}
+                            {{ vendor.bank_and_docs.vendor_code }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td data-label="Vendor Name">{{ vendor.vendor_name }}</td>
+                    <td data-label="Status">{{ vendor.status }}</td>
+                    <td data-label="Phone Number">{{ vendor.phonenumber }}</td>
+                    <td data-label="Email">{{ vendor.email }}</td>
+                    <td data-label="City">{{ vendor.city }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

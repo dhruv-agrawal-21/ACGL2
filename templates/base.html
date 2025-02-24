@@ -151,10 +151,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/about">About</a>
+                        <a class="nav-link active" aria-current="page" href="/">{{vendor.vendor_code}}</a>
                     </li>
                 </ul>
 
@@ -203,10 +200,22 @@
     </nav>
 
     <div class="sidebar" id="sidebar">
-        <h1>{{ company_name }}</h1>
         <ul>
             {% if request.session.vendor_id %}
-                <li><a href="/rfq"><i class="fas fa-folder"></i> RFQ</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li>
+                <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
+                    <ul>
+                        <li><a href="/rfq3">Create</a></li>
+                    </ul>
+                </li>
+                <li>
+                <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>Master data</a>
+                    <ul>
+                        <li><a href="#">Personal details</a></li>
+                        <li><a href="#">Bank details</a></li>
+                    </ul>
+                </li>
             {% elif request.session.admin_username %}
                 <li>
                 <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> Master data</a>
@@ -220,10 +229,9 @@
                 <li>
                     <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
                     <ul>
-                        <li><a href="/rfq">Create</a></li>
-                        <li><a href="/rfq2">Change</a></li>
-                        <li><a href="/cfo_review">Display</a></li>
-                        <li><a href="/ceo_review">Release</a></li>
+                        <li><a href="/rfq2">Display</a></li>
+                        <li><a href="/rfq3">Create</a></li>
+                        <li><a href="/rfq">Sort</a></li>
                     </ul>
                 </li>
             {% elif request.session.cfo_username %}
@@ -240,10 +248,7 @@
                 <li>
                     <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
                     <ul>
-                        <li><a href="/rfq">Create</a></li>
-                        <li><a href="/rfq2">Change</a></li>
-                        <li><a href="/cfo_review">Display</a></li>
-                        <li><a href="/ceo_review">Release</a></li>
+                        <li><a href="/rfq2">Display</a></li>                  
                     </ul>
                 </li>
             {% elif request.session.ceo_username %}
@@ -260,20 +265,51 @@
                 <li>
                     <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
                     <ul>
-                        <li><a href="/rfq">Create</a></li>
-                        <li><a href="/rfq2">Change</a></li>
-                        <li><a href="/cfo_review">Display</a></li>
-                        <li><a href="/ceo_review">Release</a></li>
+                        <li><a href="/rfq2">Display</a></li>
+                        
+                        
                     </ul>
                 </li>
             {% elif request.session.hod_username %}
                 <li><a href="/hod_dashboard"><i class="fas fa-file-alt"></i> HOD Dashboard</a></li>
+                <li>
+                    <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
+                    <ul>
+                        <li><a href="/rfq2">Display</a></li>
+                        <li><a href="/rfq3">Create</a></li>
+                        <li><a href="/rfq">Sort</a></li>
+                    </ul>
+                </li>
             {% elif request.session.design_head_username %}
                 <li><a href="/design_head_dashboard"><i class="fas fa-file-alt"></i> Design Head Dashboard</a></li>
+                <li>
+                    <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
+                    <ul>
+                        <li><a href="/rfq2">Display</a></li>
+                        <li><a href="/rfq3">Create</a></li>
+                        <li><a href="/rfq">Sort</a></li>
+                    </ul>
+                </li>
             {% elif request.session.quality_head_username %}
                 <li><a href="/quality_head_dashboard"><i class="fas fa-file-alt"></i> Quality Head Dashboard</a></li>
+                <li>
+                    <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
+                    <ul>
+                        <li><a href="/rfq2">Display</a></li>
+                        <li><a href="/rfq3">Create</a></li>
+                        <li><a href="/rfq">Sort</a></li>
+                    </ul>
+                </li>
             {% elif request.session.finance_head_username %}
                 <li><a href="/finance_head_dashboard"><i class="fas fa-file-alt"></i> Finance Head Dashboard</a></li>
+                <li>
+                    <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
+                    <ul>
+                        <li><a href="/rfq2">Display</a></li>
+                        <li><a href="/rfq3">Create</a></li>
+                        <li><a href="/rfq">Sort</a></li>
+                    </ul>
+                </li>
             {% endif %}
         </ul>
     </div>

@@ -1,161 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create RFQ</title>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            width: 900px;
-            background: white;
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+    .content {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        padding: 40px;
+        margin-left: 160px; /* Adjust based on your sidebar width */
+        overflow-x: auto; /* Enable horizontal scrolling */
+    }
+
+    .container {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow for the container */
+        max-width: 100%; /* Allow the container to expand */
+        margin: auto; /* Center the container */
+        overflow-x: auto; /* Enable horizontal scrolling for the container */
+    }
+
+    .content h1 {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #343a40;
+        text-align: center; /* Center the heading */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #fff;
+        min-width: 1200px; /* Minimum width to ensure all columns are visible */
+    }
+
+    table th, table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+    }
+
+    table th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    @media (max-width: 768px) {
+        .content {
             padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-left: 0;
+            margin-right: 0;
         }
-        .header {
-            background: #dbe5f1;
-            padding: 5px;
-            font-weight: bold;
-            font-size: 16px;
+        table th, table td {
+            padding: 8px;
         }
-        .section {
-            margin-top: 10px;
+    }
+
+    /* Responsive table for smaller screens */
+    @media (max-width: 600px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        thead tr {
+            display: none;
+        }
+
+        tr {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             padding: 10px;
-            background: #e8f0fa;
-            border-radius: 5px;
+            background-color: #fff;
         }
-        .row {
+
+        td {
             display: flex;
             justify-content: space-between;
+            padding: 10px;
         }
-        .column {
-            width: 48%;
-        }
-        label {
-            display: block;
+
+        td:before {
+            content: attr(data-label);
             font-weight: bold;
-            margin-top: 5px;
+            color: #333;
         }
-        input {
-            width: calc(100% - 10px);
-            padding: 5px;
-            margin-top: 3px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background: #dbe5f1;
-        }
-    </style>
-</head>
-<body>
+    }
+</style>
+<div class="content">
     <div class="container">
-        <div class="header">Create RFQ : Item Overview</div>
-        
-        <div class="section">
-            <div class="row">
-                <div class="column">
-                    <label>RFQ Type<input type="text"></label>
-                    <label>Vendor <input type="text"></label>
-                </div>
-                <div class="column">
-                    <label>RFQ Date <input type="text" class="date-input" id="rfq-date"></label>
-                    <label>Quotation Deadline <input type="text" class="date-input" id="quotation-deadline"></label>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="header">RFQ Items</div>
-            <table>
+        <h1>RFQ Responses</h1>
+        <table>
+            <thead>
                 <tr>
-                    <th>Item</th>
-                    <th>Material</th>
-                    <th>Short Text</th>
-                    <th>RFQ Quantity</th>
-                    <th>Unit</th>
-                    <th>Deliv. Date</th>
-                    <th>Mat. Grp</th>
-                    <th>Plant</th>
-                    <th>SLoc</th>
+                    <th>RFQ Number</th>
+                    <th>Date Submitted</th>
+                    <th>Response Deadline</th>
+                    <th>Vendor Code</th>
+                    <th>Company Name</th>
+                    <th>Contact Person</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Item Number</th>
+                    <th>Description</th>
+                    <th>Specification</th>
+                    <th>Per Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                    <th>GST (%)</th>
+                    <th>GST Amount</th>
+                    <th>Total Amount</th>
+                    <th>Attachment</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for response in vendors %}
                 <tr>
-                    <td>10</td>
-                    <td>100000001</td>
-                    <td></td>
-                    <td>10.000</td>
-                    <td>10</td>
-                    <td><input type="text" class="date-input" id="Delivery-Date"></td>
-                    <td>120028</td>
-                    <td>1AC</td>
-                    <td></td>
+                    <td data-label="RFQ Number">{{ response.rfq_number }}</td>
+                    <td data-label="Date Submitted">{{ response.date_submitted }}</td>
+                    <td data-label="Response Deadline">{{ response.response_deadline }}</td>
+                    <td data-label="Vendor Code">{{ response.vendor_code.vendor_code }}</td>
+                    <td data-label="Company Name">{{ response.company_name }}</td>
+                    <td data-label="Contact Person">{{ response.contact_person }}</td>
+                    <td data-label="Phone">{{ response.phone }}</td>
+                    <td data-label="Email">{{ response.email }}</td>
+                    <td data-label="Address">{{ response.address }}</td>
+                    <td data-label="Item Number">{{ response.item_number }}</td>
+                    <td data-label="Description">{{ response.description }}</td>
+                    <td data-label="Specification">{{ response.specification }}</td>
+                    <td data-label="Per Unit Price">{{ response.per_unit_price }}</td>
+                    <td data-label="Quantity">{{ response.quantity }}</td>
+                    <td data-label="Total Price">{{ response.total_price }}</td>
+                    <td data-label="GST (%)">{{ response.gst }}</td>
+                    <td data-label="GST Amount">{{ response.gst_amount }}</td>
+                    <td data-label="Total Amount">{{ response.total_amount }}</td>
+                    <td data-label="Attachment">
+                        {% if response.attachment %}
+                            <a href="{{ response.attachment.url }}" target="_blank">Download</a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                 </tr>
-                <tr>
-                    <td>20</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><input type="text" class="date-input"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>30</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><input type="text" class="date-input"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
-        </div>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-
-    <!-- jQuery and jQuery UI -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            $(".date-input").datepicker();
-            
-            // Set current date in the format mm/dd/yy
-            var currentDate = new Date();
-            var formattedDate = ('0' + (currentDate.getMonth() + 1)).slice(-2) + '/' + 
-                                ('0' + currentDate.getDate()).slice(-2) + '/' + 
-                                currentDate.getFullYear().toString().substr(-2);
-            $("#rfq-date").val(formattedDate);
-            $("#quotation-deadline").val(formattedDate);
-
-            $(document).on('keydown', function(e) {
-                if (e.key === 'F4') {
-                    e.preventDefault();
-                    $(".date-input:focus").datepicker("show");
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -21,7 +21,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('check-username/', views.check_username, name='check-username'),
     path('user', views.user, name='user'),
-    path('vendor', views.vendor, name='vendor'),  # Unified vendor view for all roles
+    path('vendor', views.vendor, name='vendor'),
+    path('vendor1', views.vendor1, name='vendor1'),# Unified vendor view for all roles
     path('annexure', views.annexure, name='annexure'),
     path('po', views.po, name='po'),
     path('rfq3', views.rfq3, name='rfq3'),
@@ -41,6 +42,7 @@ urlpatterns = [
     path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),  # Ensure this line is present
     path('generate_pdf/<int:requirement_id>/', views.generate_pdf, name='generate_pdf'),
     path("update_delivery_address/<int:requirement_id>/", views.update_delivery_address, name="update_delivery_address"),
+    path("submit_rfq/", views.submit_rfq, name="submit_rfq"),
 ]
 
 if settings.DEBUG:

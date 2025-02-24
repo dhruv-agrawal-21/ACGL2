@@ -1,278 +1,276 @@
 {% extends 'base.html' %}
 
 {% block body %}
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 80px auto; /* Centered with top margin for navbar */
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+        }
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            margin-top: 21px; /* Adjust based on navbar height */
+            color: #343a40;
+            margin-bottom: 32px;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #product_table_container {
+            width: 100%;
+            overflow-x: auto; /* Enables horizontal scrolling */
+            white-space: nowrap;
+        }
+        #product_table th {
+            background-color: #007bff; /* Blue background */
+            color: white; /* White text */
+        }
+
+        /* Table styling with fixed column widths */
+        #product_table {
+            width: 1500px;  /* Adjust the total width to fit all columns properly */
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        
+        /* Apply consistent styling to all table cells */
+        #product_table th,
+        #product_table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+        
+        /* Define fixed widths for each column */
+        #product_table th:nth-child(1),  /* Item Number */
+        #product_table td:nth-child(1) {
+            width: 110px;
+        }
+        
+        #product_table th:nth-child(2),  /* Description */
+        #product_table td:nth-child(2) {
+            width: 200px;
+        }
+        
+        #product_table th:nth-child(3),  /* Specification */
+        #product_table td:nth-child(3) {
+            width: 200px;
+        }
+        
+        #product_table th:nth-child(4),  /* Per Unit Price */
+        #product_table td:nth-child(4) {
+            width: 120px;
+        }
+        
+        #product_table th:nth-child(5),  /* Quantity */
+        #product_table td:nth-child(5) {
+            width: 100px;
+        }
+        
+        #product_table th:nth-child(6),  /* Total Price */
+        #product_table td:nth-child(6) {
+            width: 120px;
+        }
+        
+        #product_table th:nth-child(7),  /* GST */
+        #product_table td:nth-child(7) {
+            width: 100px;
+        }
+        
+        #product_table th:nth-child(8),  /* GST Amount */
+        #product_table td:nth-child(8) {
+            width: 120px;
+        }
+        
+        #product_table th:nth-child(9),  /* Total Amount */
+        #product_table td:nth-child(9) {
+            width: 120px;
+        }
+        
+        #product_table th:nth-child(10),  /* Attachments */
+        #product_table td:nth-child(10) {
+            width: 150px;
+        }
+        
+        #product_table th:nth-child(11),  /* Remove Button */
+        #product_table td:nth-child(11) {
+            width: 80px;
+            text-align: center;
+        }
+        
+        /* Style for input fields to ensure they fit well */
+        #product_table input, #product_table textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
     <div class="container">
-        <style>
-            .container {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
+    <h1>Request for Quotation (RFQ) Form</h1>
 
-            .title {
-                border-radius: 25px;
-                padding: 20px;
-                background-color: #333;
-                text-align: center;
-                color: white;
-            }
-
-            .rfq-details,
-            .edit-mode {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-            }
-
-            .rfq-details > div,
-            .edit-mode > div {
-                background: #333;
-                color: white;
-                padding: 10px;
-                border-radius: 25px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .rfq-details > div:first-child.open {
-                border: 2px solid green;
-            }
-
-            .rfq-details > div:first-child.closed {
-                border: 2px solid red;
-            }
-
-            .edit-mode > div:nth-child(5),
-            .rfq-details > div:nth-child(5) {
-                grid-column: span 4;
-            }
-
-            .rfq-details > div:nth-child(5),
-            .edit-mode textarea[name="about"] {
-                height: 5em;
-            }
-
-            input,
-            textarea,
-            select {
-                background: #414040;
-                color: white;
-                border-radius: 5px;
-                width: 100%;
-            }
-
-            label {
-                display: block;
-                margin-bottom: 5px;
-                color: white;
-            }
-
-            input,
-            textarea,
-            select,
-            button {
-                padding: 10px;
-                margin-bottom: 10px;
-                box-sizing: border-box;
-            }
-
-            button {
-                cursor: pointer;
-                background: #333;
-                color: white;
-                border: none;
-                border-radius: 25px;
-                margin: 0 5px;
-                width: 100%;
-                height: 40px;
-                transition: background-color 0.3s ease;
-            }
-
-            button:hover {
-                background-color: #555;
-            }
-
-            .edit-mode > div:last-child {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                justify-content: center;
-                align-items: center;
-                background: none;
-            }
-
-            .edit-button {
-                width: 170px;
-                padding: 10px;
-                display: inline-block;
-                margin: 0 auto;
-            }
-
-            .delete-button {
-                width: 170px;
-                padding: 10px;
-                display: inline-block;
-                margin: 0 auto;
-                background: red;
-            }
-
-            .response-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(2, auto);
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-
-            .response-grid > .pill {
-                background: #333;
-                color: white;
-                padding: 10px;
-                border-radius: 25px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .response-grid > .pill.status.accepted {
-                border: 2px solid green;
-            }
-
-            .response-grid > .pill.status.pending {
-                border: 2px solid yellow;
-            }
-
-            .response-grid > .pill.status.rejected {
-                border: 2px solid red;
-            }
-
-            .change-response {
-                display: flex;
-                justify-content: center;
-                margin-bottom: 20px;
-            }
-
-            .change-response > button {
-                cursor: pointer;
-                background: #333;
-                color: white;
-                border: none;
-                border-radius: 25px;
-                width: 200px;
-                height: 50px;
-                transition: background-color 0.3s ease;
-            }
-
-            .change-response > button:hover {
-                background-color: #555;
-            }
-
-            .back-button {
-                cursor: pointer;
-                background: #333;
-                color: white;
-                border: none;
-                border-radius: 25px;
-                width: 200px;
-                height: 50px;
-                transition: background-color 0.3s ease;
-                margin: 20px 0;
-            }
-
-            .back-button:hover {
-                background-color: #555;
-            }
-        </style>
-
-        <h2>Current RFQ</h2>
-        <div class="pill title">
-            <h2>{{ rfq.name }}</h2>
+    <form action='/submit_rfq/' method="post">
+        {% csrf_token %}
+        
+        <!-- RFQ Details -->
+        <div class="form-section">
+            <h2>RFQ Details</h2>
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="rfq_number">RFQ Number:</label>
+                    <input type="text" id="rfq_number" name="rfq_number" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="date_submitted">Date Submitted:</label>
+                    <input type="datetime-local" id="date_submitted" name="date_submitted" required readonly>
+                </div>
+                <div style="flex: 1;">
+                    <label for="response_deadline">Response Deadline:</label>
+                    <input type="date" id="response_deadline" name="response_deadline" required>
+                </div>
+            </div>
         </div>
-        {% if edit_mode %}
-            <div class="edit-mode">
-                <div>
-                    <label>Status:</label>
-                    <select name="status" value="{{ rfq_updates.status }}">
-                        <option value="Open">Open</option>
-                        <option value="Closed">Closed</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Contract Start Date:</label>
-                    <input type="date" name="contractStartDate" value="{{ rfq_updates.contractStartDate }}">
-                </div>
-                <div>
-                    <label>Annual Volume:</label>
-                    <input type="number" name="annualVolume" value="{{ rfq_updates.annualVolume }}">
-                </div>
-                <div>
-                    <label>Contract Length:</label>
-                    <input type="number" name="contractLength" value="{{ rfq_updates.contractLength }}">
-                </div>
-                <div>
-                    <label>About:</label>
-                    <textarea name="about">{{ rfq_updates.about }}</textarea>
-                </div>
-                <div>
-                    <button onclick="submitChanges()">Submit Changes</button>
-                    <button onclick="toggleEditMode()">Cancel</button>
-                </div>
-            </div>
-        {% else %}
-            <div class="rfq-details">
-                <div class="pill {{ rfq.status|lower }}">
-                    <p>Status: {{ rfq.status }}</p>
-                </div>
-                <div>
-                    <p>Contract Start Date: {{ rfq.contractStartDate }}</p>
-                </div>
-                <div>
-                    <p>Annual Volume: {{ rfq.annualVolume }}</p>
-                </div>
-                <div>
-                    <p>Contract Length: {{ rfq.contractLength }}</p>
-                </div>
-                <div>
-                    <p class="about">{{ rfq.about }}</p>
-                </div>
-            </div>
-            <button class="edit-button" onclick="toggleEditMode()">Edit RFQ</button>
-            <button class="delete-button" onclick="deleteRfq()">Delete RFQ</button>
-        {% endif %}
+        
 
-        <h2>Responses</h2>
-        {% for response in responses %}
-            <div>
-                <div class="response-grid">
-                    <div class="pill">
-                        <p>Submitted by: {{ response.createdBy }}</p>
-                    </div>
-                    <div class="pill">
-                        <p>Unit Price: {{ response.unitPrice }}</p>
-                    </div>
-                    <div class="pill">
-                        <p>Investment: {{ response.investment }}</p>
-                    </div>
-                    <div class="pill">
-                        <p>Currency: {{ response.currency }}</p>
-                    </div>
-                    <div class="pill status {{ response.status|lower }}">
-                        <p>Status: {{ response.status }}</p>
-                    </div>
-                    <div class="pill">
-                        <p>Comments: {{ response.comments }}</p>
-                    </div>
+        <!-- Product/Service Specifications -->
+        <div class="form-section" id="product_table_container">
+            <h2>Product/Service Specifications</h2>
+            <table id="product_table">
+                <thead>
+                    <tr>
+                        <th>Item Number</th>
+                        <th>Description</th>
+                        <th>Specification</th>
+                        <th>Per Unit Price</th>
+                        <th>Quantity</th>
+                        <th>Total Price</th>
+                        <th>GST (%)</th>
+                        <th>GST Amount</th>
+                        <th>Total Amount</th>
+                        <th>Attachments</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" name="item_number[]" required></td>
+                        <td><textarea name="description[]" rows="2" required></textarea></td>
+                        <td><textarea name="specification[]" rows="2" required></textarea></td>
+                        <td><input type="number" name="per_unit_price[]" required></td>
+                        <td><input type="number" name="quantity[]" required></td>
+                        <td><input type="number" name="total_price[]" required></td>
+                        <td><input type="number" name="gst[]" required></td>
+                        <td><input type="number" name="gst_amount[]" required></td>
+                        <td><input type="number" name="total_amount[]" required></td>
+                        <td><input type="file" name="attachments[]"></td>
+                        <td><button type="button" onclick="removeRow(this)">X</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" onclick="addRow()">Add Another Item</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Company Information</h2>
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="company_name">Company Name:</label>
+                    <input type="text" id="company_name" name="company_name" required>
                 </div>
-                <div class="change-response">
-                    <button onclick="changeResponseStatus({{ response.id }}, '{{ response.status }}')">Change Response Status</button>
+                <div style="flex: 1;">
+                    <label for="contact_person">Contact Person:</label>
+                    <input type="text" id="contact_person" name="contact_person" required>
                 </div>
             </div>
-        {% endfor %}
-        <a href="{% url 'outstandingrfqs' %}">
-            <button class="back-button">Go back</button>
-        </a>
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="email">Address:</label>
+                    <input type="textarea" id="address" name="address" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Submit RFQ</button>
+    </form>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const now = new Date();
+            const formattedDate = now.toISOString().slice(0, 16); // Format to YYYY-MM-DDTHH:MM
+            document.getElementById("date_submitted").value = formattedDate;
+        });
+        function addRow() {
+            let table = document.getElementById("product_table").getElementsByTagName('tbody')[0];
+            let newRow = table.rows[0].cloneNode(true);
+            newRow.querySelectorAll("input, textarea").forEach(input => input.value = "");
+            table.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            let row = button.parentNode.parentNode;
+            let table = document.getElementById("product_table").getElementsByTagName('tbody')[0];
+            if (table.rows.length > 1) {
+                row.parentNode.removeChild(row);
+            }
+        }
+    </script>
 {% endblock %}
