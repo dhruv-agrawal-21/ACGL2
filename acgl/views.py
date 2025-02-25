@@ -1,4 +1,5 @@
 import json
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.db import IntegrityError
@@ -11,16 +12,27 @@ from reportlab.pdfgen import canvas
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.units import inch
-from reportlab.platypus import Paragraph, Frame, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Table, TableStyle
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.mail import send_mail
 
 # Home Page
 def index(request):
     return render(request, 'index.html', {"variable1": "Jay Shree Krishna"})
+
+# Static Page Views
+def about(request): return render(request, "about.html")
+def login(request): return render(request, "login.html")
+def rfq3(request): return render(request, "RFQ3.html")
+def otp(request): return render(request, "otp.html")
+def company(request): return render(request, "company.html")
+def service(request): return HttpResponse("This is service page")
+def contact(request): return render(request, "contact.html")
+def ACGL(request): return render(request, "ACGL_logo.jpg")
+def user(request): return render(request, "user.html")
+def po(request): return render(request, "po.html")
+def annexure(request): return render(request, "annexure.html")
 
 # Login View
 def login_details(request):
@@ -31,7 +43,8 @@ def login_details(request):
         try:
             admin_user = AdminUser.objects.get(username=username1)
             if check_password(password1, admin_user.password_hash):
-                request.session["admin_username"] = admin_user.username  # Store admin username in session
+                request.session["admin_username"] = admin_user.username
+                 # Store admin username in session
                 return redirect("admin_dashboard")  # Redirect to admin dashboard
             else:
                 messages.error(request, "Incorrect password. Try again.")
@@ -127,9 +140,6 @@ def logout(request):
     auth_logout(request)
     return redirect("login")
 
-# Step 1: Capture Basic Details
-
-
 # Step 1: Capture Personal Details
 def account(request):
     if request.method == 'POST':
@@ -218,12 +228,6 @@ def account3(request):
 
     return render(request, "account3.html")
 
-# Dashboard View
-# def dashboard(request):
-#     if "vendor_id" not in request.session:
-#         return redirect("login")
-#     vendors = VendorPersonalDetails.objects.all()
-#     return render(request, "dashboard.html", {'vendors': vendors})
 def dashboard(request):
     if "vendor_id" not in request.session:
         return redirect("login")
@@ -314,20 +318,6 @@ def check_username(request):
     username = request.GET.get('username', '')
     exists = VendorPersonalDetails.objects.filter(username=username).exists()
     return JsonResponse({'exists': exists})
-
-# Static Page Views
-def about(request): return render(request, "about.html")
-def login(request): return render(request, "login.html")
-def rfq3(request): return render(request, "RFQ3.html")
-def otp(request): return render(request, "otp.html")
-def company(request): return render(request, "company.html")
-def service(request): return HttpResponse("This is service page")
-def contact(request): return render(request, "contact.html")
-def ACGL(request): return render(request, "ACGL_logo.jpg")
-def user(request): return render(request, "user.html")
-def po(request): return render(request, "po.html")
-def annexure(request): return render(request, "annexure.html")
-
 # File Download View
 def download_file(request, file_field, vendor_id):
     vendor = VendorPersonalDetails.objects.get(pk=vendor_id)
@@ -370,9 +360,7 @@ def submit_requirement(request):
             )
             requirement.save()  # Ensures RFQ No is generated
         return redirect("annexure")
-
     return render(request, 'annexure.html')
-
 
 # CFO Review Requirements List
 def cfo_review_list(request):
@@ -385,7 +373,6 @@ def cfo_review(request, requirement_id):
     if "cfo_username" not in request.session:
         return redirect("login")
     requirement = get_object_or_404(Requirement, id=requirement_id)
-
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'accept':
@@ -435,13 +422,12 @@ def ceo_review(request, requirement_id):
 
         messages.success(request, "Requirement updated successfully!")
         return redirect("ceo_review_list")
-
     return render(request, "ceo_review_detail.html", {'requirement': requirement})
-
 
 def generate_pdf(request, requirement_id):
     # Create PDF response
     requirement = get_object_or_404(Requirement, id=requirement_id)
+   
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="RFQ.pdf"'
 
@@ -693,7 +679,11 @@ def submit_rfq(request):
                     gst=gst_values[i],
                     gst_amount=gst_amounts[i],
                     total_amount=total_amounts[i],
-                    attachment=attachments[i] if i < len(attachments) else None
+                    attachment=attachments[i] if i < len(attachments) else None,
+                    hod_verification="False",
+                    Design_head_verification="False",
+                    Quality_head_verification="False",
+                    Finance_head_verification="False"
                 )
 
             return redirect("dashboard")  # Redirect to a success page
@@ -708,19 +698,38 @@ def submit_rfq(request):
     return render(request, "RFQ3.html")
 
 @csrf_exempt
-def send_to_another_page(request):
-    if request.method == 'POST':
-        selected_rfqs = request.POST.getlist('rfqs')  # Get selected RFQs
-        # Logic to move RFQs to another page
-        # Example: Update a field in the model or move to another table
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
-
-@csrf_exempt
 def delete_rfqs(request):
     if request.method == 'POST':
-        selected_rfqs = request.POST.getlist('rfqs')  # Get selected RFQs
-        # Logic to delete RFQs
-        RFQResponse.objects.filter(rfq_number__in=selected_rfqs).delete()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+        try:
+            data = json.loads(request.body)
+            selected_rfqs = data.get('rfqs', [])  # Get selected RFQs from the request
+            # Logic to delete RFQs
+            RFQResponse.objects.filter(rfq_number__in=selected_rfqs).delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@csrf_exempt
+def update_verification(request):
+    if request.method == 'POST':
+        rfq_number = request.POST.get('rfq_number')
+        vendor_code = request.POST.get('vendor_code')
+        verification_type = request.POST.get('verification_type')
+        is_verified = request.POST.get('is_verified') == 'true'
+
+        try:
+            response = RFQResponse.objects.get(rfq_number=rfq_number, vendor_code=vendor_code)
+            if verification_type == 'hod_verification':
+                response.hod_verification = is_verified
+            elif verification_type == 'design_head_verification':
+                response.design_head_verification = is_verified
+            elif verification_type == 'quality_head_verification':
+                response.quality_head_verification = is_verified
+            elif verification_type == 'finance_head_verification':
+                response.finance_head_verification = is_verified
+            response.save()
+            return JsonResponse({'status': 'success'})
+        except RFQResponse.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'RFQ Response not found'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

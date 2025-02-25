@@ -215,5 +215,10 @@ class RFQResponse(models.Model):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2)
     attachment = models.FileField(upload_to="rfq_attachments/", blank=True, null=True)
     
+    hod_verification = models.BooleanField(default=False)
+    design_head_verification = models.BooleanField(default=False)
+    quality_head_verification = models.BooleanField(default=False)
+    finance_head_verification = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"RFQ {self.rfq_number} - {self.vendor_code}"

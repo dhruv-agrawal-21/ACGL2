@@ -121,7 +121,6 @@
         }
     }
 </style>
-
 <div class="content">
     <div class="container">
         <h1>RFQ Responses</h1>
@@ -132,13 +131,12 @@
         </div>
         <!-- Add action buttons -->
         <div class="action-buttons">
-            <button id="send-button">Send to Another Page</button>
             <button id="delete-button">Delete Permanently</button>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th class="checkbox-cell"></th> <!-- Checkbox column -->
+                    <th class="checkbox-cell"></th> <!-- Delete checkbox -->
                     <th>RFQ Number</th>
                     <th>Date Submitted</th>
                     <th>Response Deadline</th>
@@ -158,12 +156,20 @@
                     <th>GST Amount</th>
                     <th>Total Amount</th>
                     <th>Attachment</th>
+                    <th>HOD Verification</th>
+                    <th>Design Head Verification</th>
+                    <th>Quality Head Verification</th>
+                    <th>Finance Head Verification</th>
                 </tr>
             </thead>
             <tbody id="table-body">
                 {% for response in vendors %}
                 <tr data-rfq="{{ response.rfq_number }}" data-total-amount="{{ response.total_amount }}">
-                    <td class="checkbox-cell"><input type="checkbox" class="rfq-checkbox" data-rfq="{{ response.rfq_number }}"></td> <!-- Checkbox -->
+                    <!-- Delete checkbox (accessible to everyone) -->
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="delete-checkbox" data-rfq="{{ response.rfq_number }}">
+                    </td>
+                    <!-- Existing columns -->
                     <td data-label="RFQ Number">{{ response.rfq_number }}</td>
                     <td data-label="Date Submitted">{{ response.date_submitted }}</td>
                     <td data-label="Response Deadline">{{ response.response_deadline }}</td>
@@ -189,6 +195,31 @@
                             N/A
                         {% endif %}
                     </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="hod-verification-checkbox" 
+                               data-hod-verification="{{ response.hod_verification }}" 
+                               {% if response.hod_verification %}checked{% endif %} 
+                               data-rfq-number="{{ response.rfq_number }}" 
+                               data-vendor-code="{{ response.vendor_code_id }}">
+                    </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="design-head-verification-checkbox"
+                               data-rfq-number="{{ response.rfq_number }}"
+                               data-vendor-code="{{ response.vendor_code_id }}"
+                               {% if response.design_head_verification %}checked{% endif %}>
+                    </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="quality-head-verification-checkbox"
+                               data-rfq-number="{{ response.rfq_number }}"
+                               data-vendor-code="{{ response.vendor_code_id }}"
+                               {% if response.quality_head_verification %}checked{% endif %}>
+                    </td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="finance-head-verification-checkbox"
+                               data-rfq-number="{{ response.rfq_number }}"
+                               data-vendor-code="{{ response.vendor_code_id }}"
+                               {% if response.finance_head_verification %}checked{% endif %}>
+                    </td>                                                            
                 </tr>
                 {% endfor %}
             </tbody>
@@ -223,53 +254,24 @@
         visibleRows.forEach(row => tbody.appendChild(row));
     });
 
-    // Function to get selected RFQs
-    function getSelectedRFQs() {
-        const checkboxes = document.querySelectorAll('.rfq-checkbox:checked');
+    // Function to get selected RFQs for deletion
+    function getSelectedRFQsForDeletion() {
+        const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
         const selectedRFQs = [];
         checkboxes.forEach(checkbox => {
-            selectedRFQs.push(checkbox.getAttribute('data-rfq'));
+            selectedRFQs.push(checkbox.getAttribute ('data-rfq'));
         });
         return selectedRFQs;
     }
 
-    // Send to another page
-    document.getElementById('send-button').addEventListener('click', function () {
-        const selectedRFQs = getSelectedRFQs();
-        if (selectedRFQs.length === 0) {
-            alert('Please select at least one RFQ.');
-            return;
-        }
-        // Send selected RFQs to Django view via AJAX or form submission
-        fetch('/send-to-another-page/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
-            },
-            body: JSON.stringify({ rfqs: selectedRFQs }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Selected RFQs have been sent to another page.');
-                window.location.href = '/another-page/'; // Redirect to the new page
-            } else {
-                alert('Failed to send RFQs.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    });
-
     // Delete permanently
     document.getElementById('delete-button').addEventListener('click', function () {
-        const selectedRFQs = getSelectedRFQs();
+        const selectedRFQs = getSelectedRFQsForDeletion();
         if (selectedRFQs.length === 0) {
             alert('Please select at least one RFQ.');
             return;
         }
         if (confirm('Are you sure you want to delete the selected RFQs permanently?')) {
-            // Send selected RFQs to Django view for deletion
             fetch('/delete-rfqs/', {
                 method: 'POST',
                 headers: {
@@ -284,11 +286,54 @@
                     alert('Selected RFQs have been deleted.');
                     window.location.reload(); // Refresh the page
                 } else {
-                    alert('Failed to delete RFQs.');
+                    alert('Failed to delete RFQs: ' + data.error);
                 }
             })
             .catch(error => console.error('Error:', error));
         }
     });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.hod-verification-checkbox, .design-head-verification-checkbox, .quality-head-verification-checkbox, .finance-head-verification-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const rfqNumber = this.getAttribute('data-rfq-number');
+                const vendorCode = this.getAttribute('data-vendor-code');
+                const verificationType = this.classList.contains('hod-verification-checkbox') ? 'hod_verification' :
+                                         this.classList.contains('design-head-verification-checkbox') ? 'design_head_verification' :
+                                         this.classList.contains('quality-head-verification-checkbox') ? 'quality_head_verification' :
+                                         'finance_head_verification';
+                const isVerified = this.checked;
+    
+                fetch('/update_verification/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `rfq_number=${encodeURIComponent(rfqNumber)}&vendor_code=${encodeURIComponent(vendorCode)}&verification_type=${encodeURIComponent(verificationType)}&is_verified=${isVerified}`
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.status !== 'success') {
+                          alert('Failed to update verification status');
+                          this.checked = !isVerified; // Revert checkbox if failed
+                      }
+                  });
+            });
+        });
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
 </script>
-{% endblock %}
+{% endblock %}  

@@ -29,3 +29,4 @@ class VendorPersonalDetailsForm(forms.ModelForm):
                 not any(char in "!@#$%^&*()-_=+" for char in password)):
             raise forms.ValidationError("Password must contain an uppercase letter, a lowercase letter, and a special character.")
         return password
+    

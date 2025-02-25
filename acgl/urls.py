@@ -43,6 +43,8 @@ urlpatterns = [
     path('generate_pdf/<int:requirement_id>/', views.generate_pdf, name='generate_pdf'),
     path("update_delivery_address/<int:requirement_id>/", views.update_delivery_address, name="update_delivery_address"),
     path("submit_rfq/", views.submit_rfq, name="submit_rfq"),
+    path('delete-rfqs/', views.delete_rfqs, name='delete_rfqs'),
+    path('update_verification/', views.update_verification, name='update_verification'),
 ]
 
 if settings.DEBUG:
