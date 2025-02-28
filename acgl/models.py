@@ -1,6 +1,7 @@
 import random
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 
 class VendorPersonalDetails(models.Model):
@@ -219,6 +220,10 @@ class RFQResponse(models.Model):
     design_head_verification = models.BooleanField(default=False)
     quality_head_verification = models.BooleanField(default=False)
     finance_head_verification = models.BooleanField(default=False)
+     # Ensure uniqueness
+    negotiated_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    final_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    negotiation_comments = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return f"RFQ {self.rfq_number} - {self.vendor_code}"

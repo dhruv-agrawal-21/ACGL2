@@ -220,6 +220,42 @@
                 });
             });
 
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".send-btn").forEach(function (button) {
+                    button.addEventListener("click", function () {
+                        let requirementId = this.getAttribute("data-id");
+                        console.log("Sending request for requirement ID:", requirementId); // Debugging log
+            
+                        fetch("{% url 'send_requirement' %}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": "{{ csrf_token }}"
+                            },
+                            body: JSON.stringify({ requirement_id: requirementId })
+                        })
+                        .then(response => {
+                            console.log("Raw response received:", response);  // Log response object
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log("Parsed response:", data);  // Log JSON response
+                            if (data.success) {
+                                alert("Requirement sent successfully!");
+                            } else {
+                                alert("Failed to send requirement: " + data.error);  
+                            }
+                        })
+                        .catch(error => {
+                            alert("Request failed. Check console for details.");
+                            console.error("Fetch error:", error);
+                        });
+                    });
+                });
+            });
+            
+            
+
             function updateDeliveryAddress(requirementId, deliveryAddress) {
             
                 fetch(`/update_delivery_address/${requirementId}/`, {

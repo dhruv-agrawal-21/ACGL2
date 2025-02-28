@@ -45,7 +45,11 @@ urlpatterns = [
     path("submit_rfq/", views.submit_rfq, name="submit_rfq"),
     path('delete-rfqs/', views.delete_rfqs, name='delete_rfqs'),
     path('update_verification/', views.update_verification, name='update_verification'),
+    path('send-requirement/', views.send_requirement, name='send_requirement'),
+    path('negotiation/<str:rfq_number>/<int:vendor_id>/', views.negotiation_detail, name='negotiation_detail'),
+
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

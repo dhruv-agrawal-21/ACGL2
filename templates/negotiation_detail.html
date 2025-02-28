@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Negotiation Details</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th colspan="2">RFQ Information</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td width="30%"><strong>RFQ Number:</strong></td>
+                        <td>{{ rfq.rfq_number }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vendor:</strong></td>
+                        <td>{{ rfq.company_name }} ({{ rfq.vendor_code.vendor_code }})</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Item:</strong></td>
+                        <td>{{ rfq.description }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Initial Amount:</strong></td>
+                        <td>{{ rfq.total_amount }}</td>
+                    </tr>
+                    {% if rfq.negotiated_amount %}
+                    <tr>
+                        <td><strong>Previously Negotiated Amount:</strong></td>
+                        <td>{{ rfq.negotiated_amount }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th colspan="2">Negotiation Form</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td width="30%"><label for="negotiated_amount"><strong>Negotiated Amount:</strong></label></td>
+                            <td>
+                                <input type="number" step="0.01" name="negotiated_amount" id="negotiated_amount" 
+                                    class="form-control" value="{{ rfq.negotiated_amount|default:rfq.total_amount }}" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="comments"><strong>Comments:</strong></label></td>
+                            <td>
+                                <textarea name="comments" id="comments" rows="4" class="form-control">{{ rfq.negotiation_comments }}</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center">
+                                <button type="submit" class="btn btn-primary mr-2">Save Changes</button>
+                                <a href="{% url 'rfq' %}" class="btn btn-secondary">Cancel</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

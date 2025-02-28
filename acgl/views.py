@@ -1,12 +1,13 @@
 import json
-import os
+import io,os
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth import logout as auth_logout
-from .models import VendorPersonalDetails, VendorBankAndDocuments, AdminUser, CFOUser, CEOUser, HODUser, DesignHeadUser, QualityHeadUser, FinanceHeadUser, Requirement,RFQResponse
+from .models import VendorPersonalDetails, VendorBankAndDocuments, AdminUser, CFOUser, CEOUser, HODUser, DesignHeadUser, QualityHeadUser, FinanceHeadUser, Requirement,RFQResponse  
 from .forms import VendorPersonalDetailsForm
 from reportlab.pdfgen import canvas
 from datetime import datetime
@@ -15,7 +16,7 @@ from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 
 # Home Page
 def index(request):
@@ -369,6 +370,7 @@ def cfo_review_list(request):
     requirements = Requirement.objects.filter(next_approver='CFO')
     return render(request, 'cfo_review.html', {'requirements': requirements})
 
+
 def cfo_review(request, requirement_id):
     if "cfo_username" not in request.session:
         return redirect("login")
@@ -425,14 +427,13 @@ def ceo_review(request, requirement_id):
     return render(request, "ceo_review_detail.html", {'requirement': requirement})
 
 def generate_pdf(request, requirement_id):
-    # Create PDF response
     requirement = get_object_or_404(Requirement, id=requirement_id)
-   
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="RFQ.pdf"'
 
-    # Initialize PDF canvas
-    pdf = canvas.Canvas(response, pagesize=A4)
+    # Define file path
+    pdf_dir = os.path.join(settings.MEDIA_ROOT, "pdfs")
+    os.makedirs(pdf_dir, exist_ok=True)  # Ensure directory exists
+    pdf_path = os.path.join(pdf_dir, f"RFQ_{requirement_id}.pdf")
+    pdf = canvas.Canvas(pdf_path, pagesize=A4)
     width, height = A4
     total_pages = 3
 
@@ -600,7 +601,12 @@ def generate_pdf(request, requirement_id):
 
     # Finalize PDF
     pdf.save()
+    with open(pdf_path, "rb") as pdf_file:
+        response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="RFQ_{requirement_id}.pdf"'
+    
     return response
+    
 
 def update_delivery_address(request, requirement_id):
     if request.method == "POST":
@@ -681,9 +687,9 @@ def submit_rfq(request):
                     total_amount=total_amounts[i],
                     attachment=attachments[i] if i < len(attachments) else None,
                     hod_verification="False",
-                    Design_head_verification="False",
-                    Quality_head_verification="False",
-                    Finance_head_verification="False"
+                    design_head_verification="False",
+                    quality_head_verification="False",
+                    finance_head_verification="False"
                 )
 
             return redirect("dashboard")  # Redirect to a success page
@@ -703,8 +709,13 @@ def delete_rfqs(request):
         try:
             data = json.loads(request.body)
             selected_rfqs = data.get('rfqs', [])  # Get selected RFQs from the request
-            # Logic to delete RFQs
-            RFQResponse.objects.filter(rfq_number__in=selected_rfqs).delete()
+
+            # Loop through each selected RFQ and delete based on rfq_number and vendor_code
+            for rfq in selected_rfqs:
+                rfqno = rfq.get('rfqno')
+                vendorcode = rfq.get('vendorcode')  # This is the primary key of VendorBankAndDocuments
+                RFQResponse.objects.filter(rfq_number=rfqno, vendor_code=vendorcode).delete()
+
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
@@ -733,3 +744,72 @@ def update_verification(request):
         except RFQResponse.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'RFQ Response not found'}, status=404)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def send_requirement(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            requirement_id = data.get("requirement_id")
+
+            if not requirement_id:
+                return JsonResponse({"success": False, "error": "Requirement ID not provided."})
+
+            # Ensure the requirement exists
+            try:
+                requirement = Requirement.objects.get(id=requirement_id)
+            except Requirement.DoesNotExist:
+                return JsonResponse({"success": False, "error": f"Requirement with ID {requirement_id} not found."})
+
+            # Locate the stored PDF file
+            pdf_path = os.path.join(settings.MEDIA_ROOT, "pdfs", f"RFQ_{requirement_id}.pdf")
+
+            if not os.path.exists(pdf_path):
+                return JsonResponse({"success": False, "error": "RFQ PDF file not found. Generate it first."})
+
+            # Fetch all vendor emails
+            vendor_emails = list(VendorPersonalDetails.objects.values_list("email", flat=True))
+
+            if not vendor_emails:
+                return JsonResponse({"success": False, "error": "No vendor emails found."})
+
+            # Send email with the stored PDF as an attachment
+            email = EmailMessage(
+                subject="New RFQ",
+                body="Please find the attached RFQ document.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=vendor_emails,
+            )
+
+            # Attach the stored PDF
+            with open(pdf_path, "rb") as pdf_file:
+                email.attach(f"RFQ_{requirement_id}.pdf", pdf_file.read(), "application/pdf")
+
+            email.send()
+
+            return JsonResponse({"success": True, "message": "Emails with RFQ PDF sent successfully."})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON format."})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": f"Unexpected error: {str(e)}"})
+
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+def negotiation_detail(request, rfq_number, vendor_id):
+    rfq_response = get_object_or_404(RFQResponse, rfq_number=rfq_number, vendor_code_id=vendor_id)
+    
+    if request.method == 'POST':
+        negotiated_amount = request.POST.get('negotiated_amount')
+        comments = request.POST.get('comments')
+        
+        if negotiated_amount:
+            rfq_response.negotiated_amount = negotiated_amount
+            rfq_response.final_amount = negotiated_amount  # Set final amount equal to negotiated 
+            rfq_response.negotiation_comments = comments
+            rfq_response.save()
+            
+            return redirect("rfq")  # Redirect back to dashboard
+    
+    return render(request, 'negotiation_detail.html', {'rfq': rfq_response})

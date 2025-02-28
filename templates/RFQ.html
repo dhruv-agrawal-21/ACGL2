@@ -160,6 +160,9 @@
                     <th>Design Head Verification</th>
                     <th>Quality Head Verification</th>
                     <th>Finance Head Verification</th>
+                    <th>Negotiated Amount</th>
+                    <th>Final Amount</th>
+                    <th>Negotiation</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -167,7 +170,7 @@
                 <tr data-rfq="{{ response.rfq_number }}" data-total-amount="{{ response.total_amount }}">
                     <!-- Delete checkbox (accessible to everyone) -->
                     <td class="checkbox-cell">
-                        <input type="checkbox" class="delete-checkbox" data-rfq="{{ response.rfq_number }}">
+                        <input type="checkbox" class="delete-checkbox" data-rfq="{{ response.rfq_number }}" data-id="{{ response.vendor_code.vendor_code }}">
                     </td>
                     <!-- Existing columns -->
                     <td data-label="RFQ Number">{{ response.rfq_number }}</td>
@@ -219,7 +222,26 @@
                                data-rfq-number="{{ response.rfq_number }}"
                                data-vendor-code="{{ response.vendor_code_id }}"
                                {% if response.finance_head_verification %}checked{% endif %}>
-                    </td>                                                            
+                    </td> 
+                    <td data-label="Negotiated Amount">
+                        {% if response.negotiated_amount %}
+                            {{ response.negotiated_amount }}
+                        {% else %}
+                            {{ response.total_amount }}
+                        {% endif %}
+                    </td>
+                    <td data-label="Final Amount">
+                        {% if response.final_amount %}
+                            {{ response.final_amount }}
+                        {% else %}
+                            {{ response.total_amount }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'negotiation_detail' response.rfq_number response.vendor_code_id %}">
+                            Negotiate
+                        </a>
+                    </td>                                                        
                 </tr>
                 {% endfor %}
             </tbody>
@@ -227,7 +249,8 @@
     </div>
 </div>
 <script>
-    // Search functionality (existing code)
+    // Search functionality (existing code)    
+    
     document.getElementById('search-button').addEventListener('click', function () {
         const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
         const rows = document.querySelectorAll('#table-body tr');
@@ -254,17 +277,17 @@
         visibleRows.forEach(row => tbody.appendChild(row));
     });
 
-    // Function to get selected RFQs for deletion
     function getSelectedRFQsForDeletion() {
         const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
         const selectedRFQs = [];
         checkboxes.forEach(checkbox => {
-            selectedRFQs.push(checkbox.getAttribute ('data-rfq'));
+            const rfqno = checkbox.getAttribute('data-rfq');
+            const vendorcode = checkbox.getAttribute('data-id'); // Use data-id for vendor_code
+            selectedRFQs.push({ rfqno, vendorcode }); // Push an object with both rfqno and vendorcode
         });
         return selectedRFQs;
     }
-
-    // Delete permanently
+    
     document.getElementById('delete-button').addEventListener('click', function () {
         const selectedRFQs = getSelectedRFQsForDeletion();
         if (selectedRFQs.length === 0) {
@@ -278,7 +301,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
                 },
-                body: JSON.stringify({ rfqs: selectedRFQs }),
+                body: JSON.stringify({ rfqs: selectedRFQs }), // Send both rfqno and vendorcode
             })
             .then(response => response.json())
             .then(data => {
