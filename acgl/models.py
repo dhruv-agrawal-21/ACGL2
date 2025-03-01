@@ -225,5 +225,14 @@ class RFQResponse(models.Model):
     final_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     negotiation_comments = models.TextField(blank=True, null=True)
     
+    vendor_counter_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    vendor_comments = models.TextField(blank=True, null=True)
+    negotiation_status = models.CharField(max_length=20, default="Pending", 
+                                          choices=[("Pending", "Pending"), 
+                                                 ("In Progress", "In Progress"),
+                                                 ("Accepted", "Accepted"),
+                                                 ("Rejected", "Rejected")])
+    
+    
     def __str__(self):
         return f"RFQ {self.rfq_number} - {self.vendor_code}"

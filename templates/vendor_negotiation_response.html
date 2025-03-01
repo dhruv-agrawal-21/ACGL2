@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Vendor Negotiation Response</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th colspan="2">RFQ Information</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td width="30%"><strong>RFQ Number:</strong></td>
+                        <td>{{ rfq.rfq_number }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Company Name:</strong></td>
+                        <td>{{ rfq.company_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Item Description:</strong></td>
+                        <td>{{ rfq.description }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Item Specification:</strong></td>
+                        <td>{{ rfq.specification }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quantity:</strong></td>
+                        <td>{{ rfq.quantity }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Initial Quoted Amount:</strong></td>
+                        <td>{{ rfq.total_amount }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin Negotiated Amount:</strong></td>
+                        <td>{{ rfq.negotiated_amount }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin Comments:</strong></td>
+                        <td>{{ rfq.negotiation_comments|default:"No comments provided" }}</td>
+                    </tr>
+                    {% if rfq.vendor_counter_amount %}
+                    <tr>
+                        <td><strong>Your Previous Counter Offer:</strong></td>
+                        <td>{{ rfq.vendor_counter_amount }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Your Previous Comments:</strong></td>
+                        <td>{{ rfq.vendor_comments|default:"No comments provided" }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th colspan="2">Your Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td width="30%"><label for="vendor_counter_amount"><strong>Your Counter Amount:</strong></label></td>
+                            <td>
+                                <input type="number" step="0.01" name="vendor_counter_amount" id="vendor_counter_amount" 
+                                    class="form-control" value="{{ rfq.vendor_counter_amount|default:rfq.negotiated_amount }}" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="vendor_comments"><strong>Your Comments:</strong></label></td>
+                            <td>
+                                <textarea name="vendor_comments" id="vendor_comments" rows="4" class="form-control">{{ rfq.vendor_comments }}</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center">
+                                <button type="submit" name="action" value="accept" class="btn btn-success mr-2">Accept Offer</button>
+                                <button type="submit" name="action" value="counter" class="btn btn-primary mr-2">Submit Counter Offer</button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger mr-2">Reject Offer</button>
+                                <a href="{% url 'vendor_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

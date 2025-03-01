@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Your RFQ Submissions</h2>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>RFQ Number</th>
+                <th>Submission Date</th>
+                <th>Total Amount</th>
+                <th>Negotiation Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for response in vendor_rfqs %}
+            <tr>
+                <td>{{ response.rfq_number }}</td>
+                <td>{{ response.date_submitted|date:"d M Y" }}</td>
+                <td>{{ response.total_amount }}</td>
+                <td>{{ response.negotiation_status }}</td>
+                <td>
+                    <a href="{% url 'vendor_negotiation_response' response.rfq_number response.vendor_code_id %}" 
+                       class="btn btn-primary">Negotiate</a>
+                </td>
+                {% comment %} <td>
+                    {% if response.vendor_code and response.vendor_code.id %}
+                        <a href="{% url 'vendor_negotiation_response' response.rfq_number response.vendor_code.id %}" 
+                           class="btn btn-primary">Negotiate</a>
+                    {% else %}
+                        <span class="text-danger">Missing vendor data</span>
+                    {% endif %}
+                </td> {% endcomment %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No RFQ submissions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

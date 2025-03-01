@@ -207,13 +207,14 @@
                 <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i> RFQ</a>
                     <ul>
                         <li><a href="/rfq3">Create</a></li>
+                        <li><a href="{% url 'vendor_dashboard' %}">Manage Submissions</a></li>
                     </ul>
                 </li>
                 <li>
                 <a href="#" onclick="toggleSubMenu(event)"><i class="fas fa-folder"></i>Master data</a>
                     <ul>
-                        <li><a href="#">Personal details</a></li>
-                        <li><a href="#">Bank details</a></li>
+                        <li><a href="{% url 'personal_dashboard' %}">Personal details</a></li>
+                        <li><a href="{% url 'bank_documents_dashboard' %}">Bank details</a></li>
                     </ul>
                 </li>
             {% elif request.session.admin_username %}

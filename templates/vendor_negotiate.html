@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Negotiate RFQ #{{ response.rfq_number }}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>RFQ Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>RFQ Number:</strong> {{ response.rfq_number }}</p>
+                    <p><strong>Item Number:</strong> {{ response.item_number }}</p>
+                    <p><strong>Quantity:</strong> {{ response.quantity }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Your Current Quote:</strong> {{ response.total_amount }}</p>
+                    <p><strong>Submission Date:</strong> {{ response.date_submitted|date:"d M Y" }}</p>
+                    {% if response.negotiated_amount %}
+                    <p><strong>Negotiated Amount:</strong> {{ response.negotiated_amount }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h4>Submit Your Counter Offer</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="vendor_counter_amount">Your Counter Offer Amount:</label>
+                    <input type="number" step="0.01" class="form-control" id="vendor_counter_amount" name="vendor_counter_amount" required>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label for="vendor_comments">Comments:</label>
+                    <textarea class="form-control" id="vendor_comments" name="vendor_comments" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3">Submit Negotiation</button>
+                <a href="{% url 'vendor_dashboard' %}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -47,6 +47,12 @@ urlpatterns = [
     path('update_verification/', views.update_verification, name='update_verification'),
     path('send-requirement/', views.send_requirement, name='send_requirement'),
     path('negotiation/<str:rfq_number>/<int:vendor_id>/', views.negotiation_detail, name='negotiation_detail'),
+    path('vendor/negotiation/<str:rfq_number>/<int:vendor_id>/', views.vendor_negotiation_response, name='vendor_negotiation_response'),
+    path('vendor/dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
+    path('vendor/rfq/<str:rfq_number>/vendor/<int:vendor_code_id>/negotiate/', 
+         views.vendor_negotiation_response, name='vendor_negotiation_response'),
+    path('dashboard/personal/', views.personal_details_dashboard, name='personal_dashboard'),
+    path('dashboard/bank-documents/', views.bank_documents_dashboard, name='bank_documents_dashboard'),
 
 ]
 

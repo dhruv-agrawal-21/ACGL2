@@ -163,6 +163,8 @@
                     <th>Negotiated Amount</th>
                     <th>Final Amount</th>
                     <th>Negotiation</th>
+                    <th>Vendor final amount</th>
+                    <th>Vendor response</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -241,7 +243,9 @@
                         <a href="{% url 'negotiation_detail' response.rfq_number response.vendor_code_id %}">
                             Negotiate
                         </a>
-                    </td>                                                        
+                    </td>
+                    <td data-label="Vendor final price">{{ response.vendor_counter_amount }}</td>
+                    <td data-label="Vendor Response">{{ response.vendor_comments }}</td>                                                        
                 </tr>
                 {% endfor %}
             </tbody>
@@ -250,7 +254,52 @@
 </div>
 <script>
     // Search functionality (existing code)    
+    document.getElementById('search-button').addEventListener('click', function () {
+        const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#table-body tr');
+        
+        // First, make all rows visible again to ensure we're searching all entries
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        
+        // Then filter based on search term
+        if (rfqNumber !== '') {
+            rows.forEach(row => {
+                const rowRfq = row.getAttribute('data-rfq').toLowerCase();
+                if (rowRfq.includes(rfqNumber)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
     
+        // Sort rows by total_amount
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+        visibleRows.sort((a, b) => {
+            const amountA = parseFloat(a.getAttribute('data-total-amount'));
+            const amountB = parseFloat(b.getAttribute('data-total-amount'));
+            return amountB - amountA; // Descending order (highest to lowest)
+        });
+    
+        // Re-append sorted rows to the table body
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        visibleRows.forEach(row => tbody.appendChild(row));
+    });
+    
+    // Add functionality to clear search when input is emptied
+    document.getElementById('rfq-input').addEventListener('input', function() {
+        if (this.value.trim() === '') {
+            // Clear search and show all rows
+            const rows = document.querySelectorAll('#table-body tr');
+            rows.forEach(row => {
+                row.style.display = '';
+        });
+        }
+    });
+    {% comment %}     
     document.getElementById('search-button').addEventListener('click', function () {
         const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
         const rows = document.querySelectorAll('#table-body tr');
@@ -275,7 +324,7 @@
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = '';
         visibleRows.forEach(row => tbody.appendChild(row));
-    });
+    }); {% endcomment %}
 
     function getSelectedRFQsForDeletion() {
         const checkboxes = document.querySelectorAll('.delete-checkbox:checked');

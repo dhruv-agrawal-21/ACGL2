@@ -3,6 +3,7 @@ import io,os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
@@ -14,6 +15,7 @@ from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
+from django.utils import timezone
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import EmailMessage
@@ -806,10 +808,204 @@ def negotiation_detail(request, rfq_number, vendor_id):
         
         if negotiated_amount:
             rfq_response.negotiated_amount = negotiated_amount
-            rfq_response.final_amount = negotiated_amount  # Set final amount equal to negotiated 
+            rfq_response.final_amount = negotiated_amount
             rfq_response.negotiation_comments = comments
+            rfq_response.negotiation_status = "In Progress"
             rfq_response.save()
             
-            return redirect("rfq")  # Redirect back to dashboard
+            return redirect('rfq')
     
     return render(request, 'negotiation_detail.html', {'rfq': rfq_response})
+
+# def vendor_negotiation_response(request, rfq_number, vendor_code_id):
+#     # Check if vendor is logged in
+#     if 'vendor_id' not in request.session:
+#         return redirect('login')
+    
+#     vendor_id = request.session['vendor_id']
+    
+#     # Verify this vendor has permission to access this RFQ
+#     try:
+#         vendor_response = RFQResponse.objects.select_related('vendor_code').get(
+#             rfq_number=rfq_number,
+#             vendor_code_id=vendor_code_id,
+#             vendor_code__vendor_id=vendor_id  # Security check
+#         )
+#     except RFQResponse.DoesNotExist:
+#         messages.error(request, "You don't have permission to negotiate this RFQ.")
+#         return redirect('vendor_dashboard')
+    
+#     if request.method == 'POST':
+#         # Process negotiation form
+#         vendor_counter_amount = request.POST.get('vendor_counter_amount')
+#         vendor_comments = request.POST.get('vendor_comments', '')
+        
+#         try:
+#             vendor_counter_amount = float(vendor_counter_amount)
+            
+#             # Update vendor response with counter offer
+#             vendor_response.vendor_counter_amount = vendor_counter_amount
+#             vendor_response.vendor_comments = vendor_comments
+#             vendor_response.negotiation_status = "In Progress"
+#             vendor_response.save()
+            
+#             messages.success(request, "Negotiation submitted successfully")
+#             return redirect('vendor_dashboard')
+            
+#         except ValueError:
+#             messages.error(request, "Invalid amount entered")
+    
+#     # Display negotiation form
+#     context = {
+#         'response': vendor_response,
+#     }
+    
+#     return render(request, 'vendor_negotiate.html', context)
+def vendor_negotiation_response(request, rfq_number, vendor_code_id):
+    # Check if vendor is logged in
+    if 'vendor_id' not in request.session:
+        return redirect('login')
+    
+    vendor_id = request.session['vendor_id']
+    
+    # Get all vendor_codes associated with this vendor_id
+    vendor_codes = VendorBankAndDocuments.objects.filter(vendor_id=vendor_id).values_list('pk', flat=True)
+    
+    # Verify this vendor has permission to access this RFQ
+    try:
+        vendor_response = RFQResponse.objects.get(
+            rfq_number=rfq_number,
+            vendor_code_id=vendor_code_id,
+            vendor_code_id__in=vendor_codes  # Security check
+        )
+    except RFQResponse.DoesNotExist:
+        messages.error(request, "You don't have permission to negotiate this RFQ.")
+        return redirect('vendor_dashboard')
+    
+    if request.method == 'POST':
+        # Process negotiation form
+        vendor_counter_amount = request.POST.get('vendor_counter_amount')
+        vendor_comments = request.POST.get('vendor_comments', '')
+        
+        try:
+            vendor_counter_amount = float(vendor_counter_amount)
+            
+            # Update vendor response with counter offer
+            vendor_response.vendor_counter_amount = vendor_counter_amount
+            vendor_response.vendor_comments = vendor_comments
+            vendor_response.negotiation_status = "In Progress"
+            vendor_response.save()
+            
+            messages.success(request, "Negotiation submitted successfully")
+            return redirect('vendor_dashboard')
+            
+        except ValueError:
+            messages.error(request, "Invalid amount entered")
+    
+    # Display negotiation form
+    context = {
+        'response': vendor_response,
+    }
+    
+    return render(request, 'vendor_negotiate.html', context)
+
+# def vendor_dashboard(request):
+#     # Check if vendor is logged in
+#     if 'vendor_id' not in request.session:
+#         return redirect('login')
+    
+#     vendor_id = request.session['vendor_id']
+    
+#     # Query RFQResponse for this vendor
+#     vendor_rfqs = RFQResponse.objects.filter(
+#         vendor_code__vendor_id=vendor_id  # Assuming vendor_id is a field in VendorBankAndDocuments
+#     ).select_related('vendor_code')
+    
+#     context = {
+#         'vendor_rfqs': vendor_rfqs
+#     }
+    
+#     return render(request, 'vendor_dashboard.html', context)
+# def vendor_negotiation_response(request, rfq_number, vendor_id):
+def vendor_dashboard(request):
+    # Check if vendor is logged in
+    if 'vendor_id' not in request.session:
+        return redirect('login')
+    
+    vendor_id = request.session['vendor_id']
+    
+    # First, get the vendor's record(s) from VendorBankAndDocuments
+    vendor_records = VendorBankAndDocuments.objects.filter(vendor_id=vendor_id)
+    
+    if not vendor_records.exists():
+        messages.error(request, "Vendor information not found.")
+        return redirect('login')
+    
+    # Get all vendor_code IDs associated with this vendor_id
+    vendor_codes = list(vendor_records.values_list('pk', flat=True))
+    
+    # Now query RFQResponse for this vendor using the vendor_code IDs
+    vendor_rfqs = RFQResponse.objects.filter(
+        vendor_code_id__in=vendor_codes
+    ).select_related('vendor_code')
+    
+    context = {
+        'vendor_rfqs': vendor_rfqs
+    }
+    
+    return render(request, 'vendor_dashboard.html', context)
+
+def personal_details_dashboard(request):
+    # Debug print (check your console)
+    print("Session data:", request.session.items())
+    print("Is authenticated:", request.user.is_authenticated)
+    
+    # Get vendor_id from session
+    vendor_id = request.session.get('vendor_id')
+    print("Vendor ID from session:", vendor_id)
+    
+    if not vendor_id:
+        return redirect('login')  # Redirect to login if no vendor_id in session
+    
+    try:
+        # Fetch only the current vendor's details
+        vendor = VendorPersonalDetails.objects.get(vendor_id=vendor_id)
+        
+        context = {
+            'vendor': vendor,
+        }
+        return render(request, 'personal_dashboard.html', context)
+    
+    except VendorPersonalDetails.DoesNotExist:
+        return HttpResponseForbidden("Access denied")
+
+def bank_documents_dashboard(request):
+    # Debug print (check your console)
+    print("Session data:", request.session.items())
+    print("Is authenticated:", request.user.is_authenticated)
+    
+    # Get vendor_id from session
+    vendor_id = request.session.get('vendor_id')
+    print("Vendor ID from session:", vendor_id)
+    
+    if not vendor_id:
+        return redirect('login')  # Redirect to login if no vendor_id in session
+    
+    try:
+        # Fetch only the current vendor's details
+        vendor = VendorPersonalDetails.objects.get(vendor_id=vendor_id)
+        
+        # Get the related bank and documents info
+        try:
+            bank_docs = VendorBankAndDocuments.objects.get(vendor=vendor)
+        except VendorBankAndDocuments.DoesNotExist:
+            bank_docs = None
+        
+        context = {
+            'vendor': vendor,
+            'bank_docs': bank_docs,
+        }
+        return render(request, 'bank_documents_dashboard.html', context)
+    
+    except VendorPersonalDetails.DoesNotExist:
+        return HttpResponseForbidden("Access denied")
