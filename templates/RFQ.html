@@ -123,6 +123,7 @@
 </style>
 <div class="content">
     <div class="container">
+        {% csrf_token %}
         <h1>RFQ Responses</h1>
         <div class="search-input">
             <label for="rfq-input">Enter RFQ Number:</label>
@@ -165,6 +166,7 @@
                     <th>Negotiation</th>
                     <th>Vendor final amount</th>
                     <th>Vendor response</th>
+                    <th>Generate PDF</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -245,7 +247,9 @@
                         </a>
                     </td>
                     <td data-label="Vendor final price">{{ response.vendor_counter_amount }}</td>
-                    <td data-label="Vendor Response">{{ response.vendor_comments }}</td>                                                        
+                    <td data-label="Vendor Response">{{ response.vendor_comments }}</td>
+                    <td class="generate-pdf-cell" data-rfq="{{ response.rfq_number }}">
+                    </td>                                                                             
                 </tr>
                 {% endfor %}
             </tbody>
@@ -253,128 +257,222 @@
     </div>
 </div>
 <script>
-    // Search functionality (existing code)    
-    document.getElementById('search-button').addEventListener('click', function () {
-        const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
-        const rows = document.querySelectorAll('#table-body tr');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Organize rows by RFQ Number on page load
+        groupAndSortByRFQNumber();
         
-        // First, make all rows visible again to ensure we're searching all entries
-        rows.forEach(row => {
-            row.style.display = '';
+        // Add Generate PDF buttons for unique RFQ numbers
+        addGeneratePDFButtons();
+        
+        // Search functionality with improved handling
+        document.getElementById('search-button').addEventListener('click', function() {
+            performSearch();
         });
         
-        // Then filter based on search term
-        if (rfqNumber !== '') {
+        // Dynamic search as you type
+        document.getElementById('rfq-input').addEventListener('input', function() {
+            performSearch();
+        });
+        
+        // Enter key in search input
+        document.getElementById('rfq-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        function performSearch() {
+            const searchTerm = document.getElementById('rfq-input').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#table-body tr');
+            
+            // Reset display for all rows
             rows.forEach(row => {
-                const rowRfq = row.getAttribute('data-rfq').toLowerCase();
-                if (rowRfq.includes(rfqNumber)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                row.style.display = '';
+            });
+            
+            // Filter based on search term if not empty
+            if (searchTerm !== '') {
+                rows.forEach(row => {
+                    const rowRfq = row.getAttribute('data-rfq').toLowerCase();
+                    if (rowRfq.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Group and sort visible rows by RFQ number
+            if (searchTerm === '') {
+                groupAndSortByRFQNumber();
+            } else {
+                // For search results, just keep them grouped by RFQ
+                const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+                sortRowsByRFQNumber(visibleRows);
+            }
+            
+            // After search, reapply the generate buttons
+            addGeneratePDFButtons();
+        }
+        
+        // Function to add Generate PDF buttons for unique RFQ numbers
+        function addGeneratePDFButtons() {
+            // Clear all existing buttons first
+            document.querySelectorAll('.generate-pdf-cell').forEach(cell => {
+                cell.innerHTML = '';
+            });
+            
+            // Get all visible rows grouped by RFQ number
+            const visibleRows = Array.from(document.querySelectorAll('#table-body tr')).filter(row => row.style.display !== 'none');
+            const rfqGroups = {};
+            
+            // Group rows by RFQ number
+            visibleRows.forEach(row => {
+                const rfqNumber = row.getAttribute('data-rfq');
+                if (!rfqGroups[rfqNumber]) {
+                    rfqGroups[rfqNumber] = [];
+                }
+                rfqGroups[rfqNumber].push(row);
+            });
+            
+            // Add Generate button only to the first row of each RFQ group
+            Object.keys(rfqGroups).forEach(rfqNumber => {
+                if (rfqGroups[rfqNumber].length > 0) {
+                    // Get the first row for this RFQ
+                    const firstRow = rfqGroups[rfqNumber][0];
+                    const cell = firstRow.querySelector('.generate-pdf-cell');
+                    
+                    // Create generate button
+                    const generateButton = document.createElement('button');
+                    generateButton.className = 'generate-pdf-button';
+                    generateButton.textContent = 'Generate PDFs';
+                    generateButton.setAttribute('data-rfq', rfqNumber);
+                    
+                    // Add click event
+                    generateButton.addEventListener('click', function() {
+                        const rfqNumber = this.getAttribute('data-rfq');
+                        generateDocuments(rfqNumber);
+                    });
+                    
+                    // Add button to cell
+                    cell.appendChild(generateButton);
                 }
             });
         }
-    
-        // Sort rows by total_amount
-        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
-        visibleRows.sort((a, b) => {
-            const amountA = parseFloat(a.getAttribute('data-total-amount'));
-            const amountB = parseFloat(b.getAttribute('data-total-amount'));
-            return amountB - amountA; // Descending order (highest to lowest)
-        });
-    
-        // Re-append sorted rows to the table body
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-        visibleRows.forEach(row => tbody.appendChild(row));
-    });
-    
-    // Add functionality to clear search when input is emptied
-    document.getElementById('rfq-input').addEventListener('input', function() {
-        if (this.value.trim() === '') {
-            // Clear search and show all rows
-            const rows = document.querySelectorAll('#table-body tr');
-            rows.forEach(row => {
-                row.style.display = '';
-        });
-        }
-    });
-    {% comment %}     
-    document.getElementById('search-button').addEventListener('click', function () {
-        const rfqNumber = document.getElementById('rfq-input').value.trim().toLowerCase();
-        const rows = document.querySelectorAll('#table-body tr');
-        rows.forEach(row => {
-            const rowRfq = row.getAttribute('data-rfq').toLowerCase();
-            if (rowRfq.includes(rfqNumber)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Sort rows by total_amount in descending order
-        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
-        visibleRows.sort((a, b) => {
-            const amountA = parseFloat(a.getAttribute('data-total-amount'));
-            const amountB = parseFloat(b.getAttribute('data-total-amount'));
-            return amountA - amountB; // Descending order
-        });
-
-        // Re-append sorted rows to the table body
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-        visibleRows.forEach(row => tbody.appendChild(row));
-    }); {% endcomment %}
-
-    function getSelectedRFQsForDeletion() {
-        const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
-        const selectedRFQs = [];
-        checkboxes.forEach(checkbox => {
-            const rfqno = checkbox.getAttribute('data-rfq');
-            const vendorcode = checkbox.getAttribute('data-id'); // Use data-id for vendor_code
-            selectedRFQs.push({ rfqno, vendorcode }); // Push an object with both rfqno and vendorcode
-        });
-        return selectedRFQs;
-    }
-    
-    document.getElementById('delete-button').addEventListener('click', function () {
-        const selectedRFQs = getSelectedRFQsForDeletion();
-        if (selectedRFQs.length === 0) {
-            alert('Please select at least one RFQ.');
-            return;
-        }
-        if (confirm('Are you sure you want to delete the selected RFQs permanently?')) {
-            fetch('/delete-rfqs/', {
+        
+        // Function to generate both PDF documents
+        function generateDocuments(rfqNumber) {
+            // Show loading indicator or message
+            console.log(`Generating documents for RFQ: ${rfqNumber}`);
+            
+            // Make AJAX request to backend
+            fetch('/create_documents/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
-                body: JSON.stringify({ rfqs: selectedRFQs }), // Send both rfqno and vendorcode
+                body: JSON.stringify({ rfq_number: rfqNumber })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Selected RFQs have been deleted.');
-                    window.location.reload(); // Refresh the page
-                } else {
-                    alert('Failed to delete RFQs: ' + data.error);
+            .then(response => {
+                if (!response.ok) {
+                    // Log and check response for error details
+                    return response.text().then(text => {
+                        console.error('Error response:', text);
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                    });
                 }
+                return response.blob();
             })
-            .catch(error => console.error('Error:', error));
+            .then(blob => {
+                // Create download link for the PDF
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `RFQ_${rfqNumber}_Documents.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                alert(`Documents for RFQ ${rfqNumber} have been generated and downloaded.`);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Failed to generate documents: ${error.message}`);
+            });
         }
-    });
-    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Function to group and sort all rows by RFQ number
+        function groupAndSortByRFQNumber() {
+            const rows = Array.from(document.querySelectorAll('#table-body tr'));
+            sortRowsByRFQNumber(rows);
+        }
+        
+        // Function to sort rows by RFQ number
+        function sortRowsByRFQNumber(rows) {
+            // Sort rows by RFQ Number
+            rows.sort((a, b) => {
+                const rfqA = a.getAttribute('data-rfq');
+                const rfqB = b.getAttribute('data-rfq');
+                return rfqA.localeCompare(rfqB);
+            });
+            
+            // Re-append sorted rows to table body
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function getSelectedRFQsForDeletion() {
+            const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
+            const selectedRFQs = [];
+            checkboxes.forEach(checkbox => {
+                const rfqno = checkbox.getAttribute('data-rfq');
+                const vendorcode = checkbox.getAttribute('data-id'); // Use data-id for vendor_code
+                selectedRFQs.push({ rfqno, vendorcode }); // Push an object with both rfqno and vendorcode
+            });
+            return selectedRFQs;
+        }
+        
+        document.getElementById('delete-button').addEventListener('click', function () {
+            const selectedRFQs = getSelectedRFQsForDeletion();
+            if (selectedRFQs.length === 0) {
+                alert('Please select at least one RFQ.');
+                return;
+            }
+            if (confirm('Are you sure you want to delete the selected RFQs permanently?')) {
+                fetch('/delete-rfqs/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token for Django
+                    },
+                    body: JSON.stringify({ rfqs: selectedRFQs }), // Send both rfqno and vendorcode
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Selected RFQs have been deleted.');
+                        window.location.reload(); // Refresh the page
+                    } else {
+                        alert('Failed to delete RFQs: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+        
         document.querySelectorAll('.hod-verification-checkbox, .design-head-verification-checkbox, .quality-head-verification-checkbox, .finance-head-verification-checkbox').forEach(function(checkbox) {
             checkbox.addEventListener('change', function() {
                 const rfqNumber = this.getAttribute('data-rfq-number');
                 const vendorCode = this.getAttribute('data-vendor-code');
                 const verificationType = this.classList.contains('hod-verification-checkbox') ? 'hod_verification' :
-                                         this.classList.contains('design-head-verification-checkbox') ? 'design_head_verification' :
-                                         this.classList.contains('quality-head-verification-checkbox') ? 'quality_head_verification' :
-                                         'finance_head_verification';
+                                        this.classList.contains('design-head-verification-checkbox') ? 'design_head_verification' :
+                                        this.classList.contains('quality-head-verification-checkbox') ? 'quality_head_verification' :
+                                        'finance_head_verification';
                 const isVerified = this.checked;
-    
+        
                 fetch('/update_verification/', {
                     method: 'POST',
                     headers: {
@@ -383,15 +481,15 @@
                     },
                     body: `rfq_number=${encodeURIComponent(rfqNumber)}&vendor_code=${encodeURIComponent(vendorCode)}&verification_type=${encodeURIComponent(verificationType)}&is_verified=${isVerified}`
                 }).then(response => response.json())
-                  .then(data => {
-                      if (data.status !== 'success') {
-                          alert('Failed to update verification status');
-                          this.checked = !isVerified; // Revert checkbox if failed
-                      }
-                  });
+                .then(data => {
+                    if (data.status !== 'success') {
+                        alert('Failed to update verification status');
+                        this.checked = !isVerified; // Revert checkbox if failed
+                    }
+                });
             });
         });
-    
+        
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -408,4 +506,4 @@
         }
     });
 </script>
-{% endblock %}  
+{% endblock %}

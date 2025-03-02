@@ -53,6 +53,7 @@ urlpatterns = [
          views.vendor_negotiation_response, name='vendor_negotiation_response'),
     path('dashboard/personal/', views.personal_details_dashboard, name='personal_dashboard'),
     path('dashboard/bank-documents/', views.bank_documents_dashboard, name='bank_documents_dashboard'),
+    path('create_documents/', views.create_documents, name='create_documents'),
 
 ]
 

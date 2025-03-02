@@ -5,6 +5,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.template.loader import render_to_string
+from io import BytesIO
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth import logout as auth_logout
@@ -12,9 +14,12 @@ from .models import VendorPersonalDetails, VendorBankAndDocuments, AdminUser, CF
 from .forms import VendorPersonalDetailsForm
 from reportlab.pdfgen import canvas
 from datetime import datetime
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import letter,A4
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from PyPDF2 import PdfMerger
 from django.utils import timezone
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
@@ -817,50 +822,6 @@ def negotiation_detail(request, rfq_number, vendor_id):
     
     return render(request, 'negotiation_detail.html', {'rfq': rfq_response})
 
-# def vendor_negotiation_response(request, rfq_number, vendor_code_id):
-#     # Check if vendor is logged in
-#     if 'vendor_id' not in request.session:
-#         return redirect('login')
-    
-#     vendor_id = request.session['vendor_id']
-    
-#     # Verify this vendor has permission to access this RFQ
-#     try:
-#         vendor_response = RFQResponse.objects.select_related('vendor_code').get(
-#             rfq_number=rfq_number,
-#             vendor_code_id=vendor_code_id,
-#             vendor_code__vendor_id=vendor_id  # Security check
-#         )
-#     except RFQResponse.DoesNotExist:
-#         messages.error(request, "You don't have permission to negotiate this RFQ.")
-#         return redirect('vendor_dashboard')
-    
-#     if request.method == 'POST':
-#         # Process negotiation form
-#         vendor_counter_amount = request.POST.get('vendor_counter_amount')
-#         vendor_comments = request.POST.get('vendor_comments', '')
-        
-#         try:
-#             vendor_counter_amount = float(vendor_counter_amount)
-            
-#             # Update vendor response with counter offer
-#             vendor_response.vendor_counter_amount = vendor_counter_amount
-#             vendor_response.vendor_comments = vendor_comments
-#             vendor_response.negotiation_status = "In Progress"
-#             vendor_response.save()
-            
-#             messages.success(request, "Negotiation submitted successfully")
-#             return redirect('vendor_dashboard')
-            
-#         except ValueError:
-#             messages.error(request, "Invalid amount entered")
-    
-#     # Display negotiation form
-#     context = {
-#         'response': vendor_response,
-#     }
-    
-#     return render(request, 'vendor_negotiate.html', context)
 def vendor_negotiation_response(request, rfq_number, vendor_code_id):
     # Check if vendor is logged in
     if 'vendor_id' not in request.session:
@@ -894,6 +855,9 @@ def vendor_negotiation_response(request, rfq_number, vendor_code_id):
             vendor_response.vendor_counter_amount = vendor_counter_amount
             vendor_response.vendor_comments = vendor_comments
             vendor_response.negotiation_status = "In Progress"
+            
+            vendor_response.final_amount = vendor_counter_amount
+            
             vendor_response.save()
             
             messages.success(request, "Negotiation submitted successfully")
@@ -909,24 +873,6 @@ def vendor_negotiation_response(request, rfq_number, vendor_code_id):
     
     return render(request, 'vendor_negotiate.html', context)
 
-# def vendor_dashboard(request):
-#     # Check if vendor is logged in
-#     if 'vendor_id' not in request.session:
-#         return redirect('login')
-    
-#     vendor_id = request.session['vendor_id']
-    
-#     # Query RFQResponse for this vendor
-#     vendor_rfqs = RFQResponse.objects.filter(
-#         vendor_code__vendor_id=vendor_id  # Assuming vendor_id is a field in VendorBankAndDocuments
-#     ).select_related('vendor_code')
-    
-#     context = {
-#         'vendor_rfqs': vendor_rfqs
-#     }
-    
-#     return render(request, 'vendor_dashboard.html', context)
-# def vendor_negotiation_response(request, rfq_number, vendor_id):
 def vendor_dashboard(request):
     # Check if vendor is logged in
     if 'vendor_id' not in request.session:
@@ -1009,3 +955,324 @@ def bank_documents_dashboard(request):
     
     except VendorPersonalDetails.DoesNotExist:
         return HttpResponseForbidden("Access denied")
+
+def create_documents(request):
+    """Create both Negotiation Committee and Approval Synopsis PDFs for an RFQ"""
+    if request.method == 'POST':
+        # Check if user is logged in as admin
+        if "admin_username" not in request.session:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+        # You can add an additional check for a specific username if needed
+        # For example, if you want to check the value of admin_username:
+        # if request.session.get("admin_username") != "specific_admin_name":
+        #     return JsonResponse({'error': 'Insufficient permissions'}, status=403)
+        
+        try:
+            data = json.loads(request.body)
+            rfq_number = data.get('rfq_number')
+            
+            # Debug logging
+            print(f"Creating PDFs for RFQ: {rfq_number}")
+            
+            # Get all vendor responses for this RFQ
+            responses = RFQResponse.objects.filter(rfq_number=rfq_number).order_by('total_amount')
+            
+            # Rest of your existing code...
+            
+            if not responses:
+                return JsonResponse({'error': 'No responses found for this RFQ'}, status=404)
+            
+            # Create a BytesIO buffer to receive the combined PDF data
+            buffer = BytesIO()
+            
+            # Create individual PDFs
+            negotiation_pdf = create_negotiation_pdf(responses)
+            approval_pdf = create_approval_pdf(responses)
+            
+            # Merge the PDFs
+            pdf_merger = PdfMerger()
+            pdf_merger.append(BytesIO(negotiation_pdf))
+            pdf_merger.append(BytesIO(approval_pdf))
+            pdf_merger.write(buffer)
+            
+            # Set up the response
+            buffer.seek(0)
+            response = HttpResponse(buffer.read(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="RFQ_{rfq_number}_Documents.pdf"'
+            
+            return response
+        except Exception as e:
+            import traceback
+            print(f"Error generating PDFs: {str(e)}")
+            print(traceback.format_exc())
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def create_negotiation_pdf(responses):
+    """Create the Negotiation Committee Format PDF"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+    styles = getSampleStyleSheet()
+    
+    # Create document elements
+    elements = []
+    
+    # Title
+    title_style = styles['Heading1']
+    title = Paragraph("Price settlement by Negotiation Committee", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Date
+    date_style = styles['Normal']
+    date_text = Paragraph(f"Date: {datetime.now().strftime('%d.%m.%Y')}", date_style)
+    elements.append(date_text)
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Vendor Information
+    for i, response in enumerate(responses, 1):
+        vendor_style = styles['Heading3']
+        vendor_title = Paragraph(f"Quotation {i}: {response.company_name} / {response.phone}", vendor_style)
+        elements.append(vendor_title)
+        
+        data_style = styles['Normal']
+        price_quoted = Paragraph(f"Price Quoted: Rs {response.total_amount}/-", data_style)
+        elements.append(price_quoted)
+        
+        negotiated_amount = response.negotiated_amount if response.negotiated_amount else response.total_amount
+        negotiated = Paragraph(f"Negotiated & Settled: Rs {negotiated_amount}/-", data_style)
+        elements.append(negotiated)
+        
+        # Determine vendor status (L1, L2, L3)
+        status = "L1" if i == 1 else f"L{i}"
+        status_text = Paragraph(f"Status: {status}", data_style)
+        elements.append(status_text)
+        elements.append(Spacer(1, 0.25*inch))
+    
+    # Reason for less than 3 quotes (if applicable)
+    if len(responses) < 3:
+        reason_title = Paragraph("Reason for less than 3 quotes:", styles['Heading3'])
+        elements.append(reason_title)
+        reason_text = Paragraph("_______________________________________________________", styles['Normal'])
+        elements.append(reason_text)
+        elements.append(Spacer(1, 0.25*inch))
+    
+    # Committee members
+    committee_title = Paragraph("Negotiation Committee members:", styles['Heading3'])
+    elements.append(committee_title)
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Signature lines
+    signature_data = [
+        ["Approving authority:", "Price panel committee"],
+        ["Respective Buyer / Project owner:", "_______________________"],
+        ["Material Incharge / Representative:", "_______________________"],
+        ["Costing Incharge / Representative:", "_______________________"],
+    ]
+    
+    signature_table = Table(signature_data, colWidths=[2.5*inch, 2.5*inch])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.white),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    elements.append(signature_table)
+    elements.append(Spacer(1, 0.5*inch))
+    
+    # Project info
+    project_info = Paragraph(f"Material/project: {responses[0].description}", styles['Normal'])
+    elements.append(project_info)
+    
+    # Build the PDF
+    doc.build(elements)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+    
+    return pdf_data
+
+def create_approval_pdf(responses):
+    """Create the Approval Synopsis PDF"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+    styles = getSampleStyleSheet()
+    
+    # Create document elements
+    elements = []
+    
+    # Header
+    header_data = [
+        ["From:", "IT Department", "Date:", datetime.now().strftime('%d-%m-%Y')],
+        ["Through", "", "", ""],
+        ["CEO", "", "", ""],
+    ]
+    
+    header_table = Table(header_data, colWidths=[1*inch, 2*inch, 1*inch, 2*inch])
+    header_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.white),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 0.5*inch))
+    
+    # Description
+    description = f"We required {responses[0].description} as specified in the RFQ {responses[0].rfq_number}."
+    description_para = Paragraph(description, styles['Normal'])
+    elements.append(description_para)
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Create vendor comparison table
+    table_data = [
+        ["Sr.No", "Description", "Amount", "Amount", "Amount"],
+        ["", "", responses[0].company_name, responses[1].company_name if len(responses) > 1 else "", 
+         responses[2].company_name if len(responses) > 2 else ""],
+    ]
+    
+    # Add description row
+    table_data.append([
+        "1", 
+        responses[0].description,
+        str(responses[0].per_unit_price),
+        str(responses[1].per_unit_price) if len(responses) > 1 else "",
+        str(responses[2].per_unit_price) if len(responses) > 2 else ""
+    ])
+    
+    # Add GST row
+    table_data.append([
+        "", 
+        "GST " + str(responses[0].gst) + "%",
+        str(responses[0].gst_amount),
+        str(responses[1].gst_amount) if len(responses) > 1 else "",
+        str(responses[2].gst_amount) if len(responses) > 2 else ""
+    ])
+    
+    # Add total row
+    table_data.append([
+        "", 
+        "Total inclusive with GST",
+        str(responses[0].total_amount),
+        str(responses[1].total_amount) if len(responses) > 1 else "",
+        str(responses[2].total_amount) if len(responses) > 2 else ""
+    ])
+    
+    # Add quantity row
+    table_data.append([
+        "", 
+        "Qty",
+        str(responses[0].quantity),
+        str(responses[1].quantity) if len(responses) > 1 else "",
+        str(responses[2].quantity) if len(responses) > 2 else ""
+    ])
+    
+    # Add total amount row
+    final_amounts = []
+    for i, response in enumerate(responses):
+        if i < 3:  # Only include first 3 vendors
+            final_amount = float(response.total_amount) * float(response.quantity)
+            final_amounts.append(str(final_amount))
+        else:
+            break
+            
+    while len(final_amounts) < 3:
+        final_amounts.append("")
+    
+    table_data.append([
+        "", 
+        "Total Amount",
+        final_amounts[0],
+        final_amounts[1],
+        final_amounts[2]
+    ])
+    
+    # Add payment terms - Using placeholder since this isn't in the model
+    payment_terms = []
+    for i, response in enumerate(responses):
+        if i < 3:  # Only include first 3 vendors
+            # Using a default placeholder since payment_terms isn't in the model
+            payment_terms.append("Standard payment terms")
+        else:
+            break
+            
+    while len(payment_terms) < 3:
+        payment_terms.append("")
+    
+    table_data.append([
+        "", 
+        "Payment",
+        payment_terms[0],
+        payment_terms[1],
+        payment_terms[2]
+    ])
+    
+    # Add delivery terms - Using placeholder since this isn't in the model
+    delivery_terms = []
+    for i, response in enumerate(responses):
+        if i < 3:  # Only include first 3 vendors
+            # Using a default placeholder since delivery_terms isn't in the model
+            delivery_terms.append("Standard delivery terms")
+        else:
+            break
+            
+    while len(delivery_terms) < 3:
+        delivery_terms.append("")
+    
+    table_data.append([
+        "", 
+        "Delivery",
+        delivery_terms[0],
+        delivery_terms[1],
+        delivery_terms[2]
+    ])
+    
+    # Create the table
+    comparison_table = Table(table_data, colWidths=[0.5*inch, 2*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+    comparison_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('SPAN', (0, 0), (0, 1)),  # Span Sr.No header
+        ('SPAN', (1, 0), (1, 1)),  # Span Description header
+        ('SPAN', (2, 0), (4, 0)),  # Span Amount header
+        ('BACKGROUND', (0, 0), (-1, 1), colors.lightgrey),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(comparison_table)
+    elements.append(Spacer(1, 0.5*inch))
+    
+    # Recommendation text
+    lowest_vendor = responses[0].company_name
+    recommendation = f"Considering the lowest quotation from {lowest_vendor}, we plan to procure the above items."
+    recommendation_para = Paragraph(recommendation, styles['Normal'])
+    elements.append(recommendation_para)
+    elements.append(Spacer(1, 0.5*inch))
+    
+    # Approval text
+    approval_text = Paragraph("This is put up for your approvals.", styles['Normal'])
+    elements.append(approval_text)
+    elements.append(Spacer(1, 1*inch))
+    
+    # Signature
+    signature_data = [
+        ["NAME", "NAME"],
+        ["(SM-IT)", "(CFO)"],
+    ]
+    
+    signature_table = Table(signature_data, colWidths=[3*inch, 3*inch])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.white),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    elements.append(signature_table)
+    
+    # Build the PDF
+    doc.build(elements)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+    
+    return pdf_data
