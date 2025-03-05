@@ -1,5 +1,6 @@
 import json
 import io,os
+import tempfile
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
@@ -24,6 +25,9 @@ from django.utils import timezone
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import EmailMessage
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from .pdf_generator import generate_vendor_pdf
 
 # Home Page
 def index(request):
@@ -157,7 +161,6 @@ def account(request):
             vendor.password_hash = make_password(form.cleaned_data['password'])  # Hash password
             vendor.save()  # Save immediately
 
-            messages.success(request, "Personal details saved successfully.")
             return redirect("login")  # Redirect to dashboard
         else:
             print("Form is not valid. Errors:")
@@ -257,12 +260,24 @@ def cfo_dashboard(request):
     requirements = Requirement.objects.filter(next_approver='CFO').order_by('-id')
     return render(request, "cfo_dashboard.html", {'requirements': requirements})
 
+def cfo_dashboard2(request):
+    if "cfo_username" not in request.session:
+        return redirect("login")
+    requirements = Requirement.objects.all().order_by('-id')
+    return render(request, "cfo_dashboard2.html", {'requirements': requirements})
+
 # CEO Dashboard View
 def ceo_dashboard(request):
     if "ceo_username" not in request.session:
         return redirect("login")
     requirements = Requirement.objects.filter(next_approver='CEO', status='Approved by CFO').order_by('-id')
     return render(request, "ceo_dashboard.html", {'requirements': requirements})
+
+def ceo_dashboard2(request):
+    if "ceo_username" not in request.session:
+        return redirect("login")
+    requirements = Requirement.objects.all().order_by('-id')
+    return render(request, "ceo_dashboard2.html", {'requirements': requirements})
 
 # HOD Dashboard View
 def hod_dashboard(request):
@@ -397,7 +412,6 @@ def cfo_review(request, requirement_id):
             requirement.modification_description = modification_description
         requirement.save()
 
-        messages.success(request, "Requirement updated successfully!")
         return redirect("cfo_review_list")
 
     return render(request, 'cfo_review_detail.html', {'requirement': requirement})
@@ -429,7 +443,6 @@ def ceo_review(request, requirement_id):
             requirement.modification_description = modification_description
         requirement.save()
 
-        messages.success(request, "Requirement updated successfully!")
         return redirect("ceo_review_list")
     return render(request, "ceo_review_detail.html", {'requirement': requirement})
 
@@ -860,7 +873,6 @@ def vendor_negotiation_response(request, rfq_number, vendor_code_id):
             
             vendor_response.save()
             
-            messages.success(request, "Negotiation submitted successfully")
             return redirect('vendor_dashboard')
             
         except ValueError:
@@ -1034,7 +1046,7 @@ def create_negotiation_pdf(responses):
     # Vendor Information
     for i, response in enumerate(responses, 1):
         vendor_style = styles['Heading3']
-        vendor_title = Paragraph(f"Quotation {i}: {response.company_name} / {response.phone}", vendor_style)
+        vendor_title = Paragraph(f"Quotation {i}: {response.company_name} /  {response.phone}", vendor_style)
         elements.append(vendor_title)
         
         data_style = styles['Normal']
@@ -1276,3 +1288,81 @@ def create_approval_pdf(responses):
     buffer.close()
     
     return pdf_data
+
+@csrf_exempt
+def generate_and_email_pdf(request):
+    """
+    View to generate a PDF for a specific RFQ and vendor, then email it to the vendor.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Only POST method is allowed'})
+    
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+        rfq_number = data.get('rfq_number')
+        vendor_code = data.get('vendor_code')
+        
+        if not rfq_number or not vendor_code:
+            return JsonResponse({'success': False, 'error': 'RFQ number and vendor code are required'})
+        
+        # Check if the RFQ response exists
+        try:
+            rfq_response = RFQResponse.objects.get(rfq_number=rfq_number, vendor_code=vendor_code)
+        except RFQResponse.DoesNotExist:
+            return JsonResponse({'success': False, 'error': f'No RFQResponse found for RFQ {rfq_number} and Vendor {vendor_code}'})
+        
+        # Get vendor details to find email
+        try:
+            # First, get the vendor bank details using vendor_code
+            vendor_bank = VendorBankAndDocuments.objects.get(vendor_code=vendor_code)
+            vendor_id = vendor_bank.vendor_id
+            
+            # Then, get personal details to find email
+            vendor_personal = VendorPersonalDetails.objects.get(vendor_id=vendor_id)
+            vendor_email = vendor_personal.email
+            
+            if not vendor_email:
+                return JsonResponse({'success': False, 'error': 'Vendor email not found'})
+            
+        except VendorBankAndDocuments.DoesNotExist:
+            return JsonResponse({'success': False, 'error': f'Vendor bank details not found for vendor code {vendor_code}'})
+        except VendorPersonalDetails.DoesNotExist:
+            return JsonResponse({'success': False, 'error': f'Vendor personal details not found for vendor ID {vendor_id}'})
+        
+        # Generate PDF
+        try:
+            # Create a temporary file to store the PDF
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                tmp_path = tmp.name
+            
+            # Generate PDF (adjust this based on your actual PDF generation function)
+            generate_vendor_pdf(rfq_response, tmp_path)
+            
+            # Create email with PDF attachment
+            subject = f'RFQ {rfq_number} Documentation'
+            message = f'Please find attached the documentation for RFQ {rfq_number}.'
+            email = EmailMessage(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [vendor_email]
+            )
+            
+            # Attach the PDF to the email
+            with open(tmp_path, 'rb') as pdf_file:
+                email.attach(f'RFQ_{rfq_number}_Document.pdf', pdf_file.read(), 'application/pdf')
+            
+            # Send the email
+            email.send()
+            
+            # Clean up the temporary file
+            os.unlink(tmp_path)
+            
+            return JsonResponse({'success': True, 'message': f'PDF sent to {vendor_email}'})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Failed to generate or send PDF: {str(e)}'})
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

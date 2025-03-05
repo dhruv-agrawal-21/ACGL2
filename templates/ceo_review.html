@@ -55,6 +55,7 @@
     }
 </style>
 <div class="content">
+    <div class="container">
     <h1>CEO Review Requirements</h1>
     <table class="table table-bordered">
         <thead>
@@ -86,11 +87,12 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'negotiation_detail' rfq.id %}" class="btn btn-primary">Negotiate</a>
+                    <a href="{% url 'ceo_review' requirement.id %}" class="btn btn-primary">Review</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 {% endblock %}

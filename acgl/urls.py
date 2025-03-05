@@ -29,7 +29,9 @@ urlpatterns = [
     path('download/<str:file_field>/<int:vendor_id>/', views.download_file, name='download_file'),
     path('submit_requirement/', views.submit_requirement, name='submit_requirement'),
     path('cfo_dashboard/', views.cfo_dashboard, name='cfo_dashboard'),
+    path('cfo_dashboard2/', views.cfo_dashboard2, name='cfo_dashboard2'),
     path('ceo_dashboard/', views.ceo_dashboard, name='ceo_dashboard'),
+    path('ceo_dashboard2/', views.ceo_dashboard2, name='ceo_dashboard2'),
     path('hod_dashboard/', views.hod_dashboard, name='hod_dashboard'),
     path('design_head_dashboard/', views.design_head_dashboard, name='design_head_dashboard'),
     path('quality_head_dashboard/', views.quality_head_dashboard, name='quality_head_dashboard'),
@@ -54,7 +56,7 @@ urlpatterns = [
     path('dashboard/personal/', views.personal_details_dashboard, name='personal_dashboard'),
     path('dashboard/bank-documents/', views.bank_documents_dashboard, name='bank_documents_dashboard'),
     path('create_documents/', views.create_documents, name='create_documents'),
-
+    path('generate_and_email_pdf/', views.generate_and_email_pdf, name='generate_and_email_pdf'),
 ]
 
 
